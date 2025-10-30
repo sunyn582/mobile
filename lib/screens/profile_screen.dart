@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants/app_constants.dart';
+import '../utils/theme_provider.dart';
+import 'theme_loading_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -9,18 +12,46 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _isDarkMode = false;
   bool _isVietnamese = false;
+
+  void _handleThemeToggle(bool value, ThemeProvider themeProvider) {
+    // Show loading screen overlay
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return ThemeLoadingScreen(
+          isDarkMode: value,
+          onComplete: () {
+            // Close the dialog
+            Navigator.of(context).pop();
+            // Toggle the theme
+            themeProvider.toggleTheme();
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile & Settings'),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
+        decoration: BoxDecoration(
+          gradient: isDarkMode
+              ? const LinearGradient(
+                  colors: [AppColors.darkBackground, Color(0xFF2D2D2D)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                )
+              : AppColors.backgroundGradient,
         ),
         child: ListView(
           padding: const EdgeInsets.all(AppDimensions.paddingMedium),
@@ -29,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingLarge),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 boxShadow: AppShadows.small,
               ),
@@ -76,21 +107,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               margin: const EdgeInsets.only(bottom: AppDimensions.paddingSmall),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 boxShadow: AppShadows.small,
               ),
               child: SwitchListTile(
                 title: const Text('Dark Mode'),
                 subtitle: const Text('Switch between light and dark theme'),
-                value: _isDarkMode,
-                onChanged: (value) {
-                  setState(() {
-                    _isDarkMode = value;
-                  });
-                },
+                value: isDarkMode,
+                onChanged: (value) => _handleThemeToggle(value, themeProvider),
                 secondary: Icon(
-                  _isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                  isDarkMode ? Icons.dark_mode : Icons.light_mode,
                   color: AppColors.primary,
                 ),
                 activeTrackColor: AppColors.primary,
@@ -101,7 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               margin: const EdgeInsets.only(bottom: AppDimensions.paddingSmall),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 boxShadow: AppShadows.small,
               ),
@@ -136,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingMedium),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 boxShadow: AppShadows.small,
               ),
@@ -164,7 +191,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingMedium),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 boxShadow: AppShadows.small,
               ),
