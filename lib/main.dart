@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'constants/app_theme.dart';
+import 'screens/welcome_screen.dart';
 
 void main() {
-  runApp(const StoryReaderApp());
+  runApp(const HabitTrackerApp());
 }
 
-class StoryReaderApp extends StatelessWidget {
-  const StoryReaderApp({super.key});
+class HabitTrackerApp extends StatelessWidget {
+  const HabitTrackerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ứng Dụng Đọc Truyện',
+      title: 'Habit Tracker',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          elevation: 2,
-        ),
-      ),
-      home: const HomeScreen(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light,
+      home: const WelcomeScreen(),
     );
   }
 }
