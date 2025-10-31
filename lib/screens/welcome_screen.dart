@@ -72,10 +72,18 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
+        decoration: BoxDecoration(
+          gradient: isDarkMode
+              ? const LinearGradient(
+                  colors: [AppColors.darkBackground, Color(0xFF2D2D2D)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                )
+              : AppColors.backgroundGradient,
         ),
         child: SafeArea(
           child: Padding(
@@ -92,7 +100,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDarkMode ? AppColors.darkCard : Colors.white,
                       borderRadius: BorderRadius.circular(60),
                       boxShadow: AppShadows.large,
                     ),
@@ -124,9 +132,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   opacity: _fadeAnimation,
                   child: Text(
                     'Build good habits,\none day at a time.',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                    style: Theme.of(context).textTheme.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
                 ),

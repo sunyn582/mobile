@@ -73,13 +73,14 @@ class _HabitCardState extends State<HabitCard>
     final color = _getColor();
     final completionRate = widget.habit.getWeeklyCompletionRate();
     final streak = widget.habit.getStreak();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: widget.onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: AppDimensions.paddingMedium),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkMode ? AppColors.darkCard : Colors.white,
           borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
           boxShadow: AppShadows.small,
         ),
@@ -166,7 +167,9 @@ class _HabitCardState extends State<HabitCard>
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: _isCompleted ? color : Colors.grey.shade200,
+                        color: _isCompleted 
+                            ? color 
+                            : (isDarkMode ? AppColors.darkSurface : Colors.grey.shade200),
                         shape: BoxShape.circle,
                       ),
                       child: _isCompleted
@@ -208,7 +211,9 @@ class _HabitCardState extends State<HabitCard>
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: completionRate,
-                      backgroundColor: Colors.grey.shade200,
+                      backgroundColor: isDarkMode 
+                          ? AppColors.darkSurface 
+                          : Colors.grey.shade200,
                       valueColor: AlwaysStoppedAnimation<Color>(color),
                       minHeight: 6,
                     ),

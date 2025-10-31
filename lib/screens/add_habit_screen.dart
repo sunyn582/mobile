@@ -81,6 +81,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.habit == null ? 'Add New Habit' : 'Edit Habit'),
@@ -92,8 +94,14 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         ],
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
+        decoration: BoxDecoration(
+          gradient: isDarkMode
+              ? const LinearGradient(
+                  colors: [AppColors.darkBackground, Color(0xFF2D2D2D)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                )
+              : AppColors.backgroundGradient,
         ),
         child: Form(
           key: _formKey,
@@ -131,7 +139,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingMedium),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDarkMode ? AppColors.darkCard : Colors.white,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.radiusMedium),
                 ),
@@ -152,7 +160,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                         decoration: BoxDecoration(
                           color: isSelected
                               ? _getColor(_selectedColor).withValues(alpha: 0.2)
-                              : Colors.grey.shade100,
+                              : (isDarkMode ? AppColors.darkSurface : Colors.grey.shade100),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
@@ -184,7 +192,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingMedium),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDarkMode ? AppColors.darkCard : Colors.white,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.radiusMedium),
                 ),
@@ -207,13 +215,15 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                         decoration: BoxDecoration(
                           color: isSelected
                               ? _getColor(_selectedColor)
-                              : Colors.grey.shade200,
+                              : (isDarkMode ? AppColors.darkSurface : Colors.grey.shade200),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           category,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : AppColors.textPrimary,
+                            color: isSelected 
+                                ? Colors.white 
+                                : (isDarkMode ? Colors.white70 : AppColors.textPrimary),
                             fontWeight:
                                 isSelected ? FontWeight.w600 : FontWeight.normal,
                           ),
@@ -235,7 +245,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingMedium),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDarkMode ? AppColors.darkCard : Colors.white,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.radiusMedium),
                 ),
@@ -284,7 +294,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingMedium),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDarkMode ? AppColors.darkCard : Colors.white,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.radiusMedium),
                 ),
@@ -332,7 +342,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingMedium),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDarkMode ? AppColors.darkCard : Colors.white,
                     borderRadius:
                         BorderRadius.circular(AppDimensions.radiusMedium),
                   ),

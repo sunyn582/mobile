@@ -131,11 +131,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final completedToday = _getCompletedToday();
     final todayProgress = _getTodayProgress();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
+        decoration: BoxDecoration(
+          gradient: isDarkMode
+              ? const LinearGradient(
+                  colors: [AppColors.darkBackground, Color(0xFF2D2D2D)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                )
+              : AppColors.backgroundGradient,
         ),
         child: SafeArea(
           child: Column(
@@ -154,8 +161,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: _navigateToProfile,
                       icon: const Icon(Icons.person_outline),
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppColors.textPrimary,
+                        backgroundColor: isDarkMode 
+                            ? AppColors.darkCard 
+                            : Colors.white,
+                        foregroundColor: isDarkMode 
+                            ? Colors.white 
+                            : AppColors.textPrimary,
                       ),
                     ),
                   ],
@@ -169,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 padding: const EdgeInsets.all(AppDimensions.paddingMedium),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDarkMode ? AppColors.darkCard : Colors.white,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.radiusMedium),
                   boxShadow: AppShadows.small,

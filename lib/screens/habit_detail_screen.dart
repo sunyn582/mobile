@@ -115,6 +115,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
     final weekData = _getLast7DaysData();
     final completionRate = _habit.getWeeklyCompletionRate();
     final streak = _habit.getStreak();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -131,8 +132,14 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
         ],
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
+        decoration: BoxDecoration(
+          gradient: isDarkMode
+              ? const LinearGradient(
+                  colors: [AppColors.darkBackground, Color(0xFF2D2D2D)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                )
+              : AppColors.backgroundGradient,
         ),
         child: ListView(
           padding: const EdgeInsets.all(AppDimensions.paddingMedium),
@@ -141,7 +148,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingLarge),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 boxShadow: AppShadows.small,
               ),
@@ -198,7 +205,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(AppDimensions.paddingMedium),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDarkMode ? AppColors.darkCard : Colors.white,
                       borderRadius:
                           BorderRadius.circular(AppDimensions.radiusMedium),
                       boxShadow: AppShadows.small,
@@ -233,7 +240,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(AppDimensions.paddingMedium),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDarkMode ? AppColors.darkCard : Colors.white,
                       borderRadius:
                           BorderRadius.circular(AppDimensions.radiusMedium),
                       boxShadow: AppShadows.small,
@@ -272,7 +279,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingMedium),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 boxShadow: AppShadows.small,
               ),
@@ -356,7 +363,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingMedium),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 boxShadow: AppShadows.small,
               ),
