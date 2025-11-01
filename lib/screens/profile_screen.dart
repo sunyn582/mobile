@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../constants/app_constants.dart';
 import '../utils/theme_provider.dart';
+import '../utils/language_provider.dart';
 import 'theme_loading_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -12,8 +14,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _isVietnamese = false;
-
   void _handleThemeToggle(bool value, ThemeProvider themeProvider) {
     // Show loading screen overlay
     showDialog(
@@ -36,12 +36,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final languageProvider = Provider.of<LanguageProvider>(context);
     final isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile & Settings'),
+        title: Text(l10n.profileAndSettings),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -82,12 +84,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: AppDimensions.paddingMedium),
                   Text(
-                    'User Name',
+                    l10n.userName,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: AppDimensions.paddingSmall),
                   Text(
-                    'Building great habits every day',
+                    l10n.buildingHabitsEveryDay,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -98,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // Settings Section
             Text(
-              'Settings',
+              l10n.settings,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppDimensions.paddingSmall),
@@ -112,8 +114,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 boxShadow: AppShadows.small,
               ),
               child: SwitchListTile(
-                title: const Text('Dark Mode'),
-                subtitle: const Text('Switch between light and dark theme'),
+                title: Text(l10n.darkMode),
+                subtitle: Text(l10n.switchTheme),
                 value: isDarkMode,
                 onChanged: (value) => _handleThemeToggle(value, themeProvider),
                 secondary: Icon(
@@ -133,15 +135,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 boxShadow: AppShadows.small,
               ),
               child: SwitchListTile(
-                title: Text(_isVietnamese ? 'Tiếng Việt' : 'English'),
-                subtitle: Text(_isVietnamese
-                    ? 'Chuyển đổi ngôn ngữ'
-                    : 'Switch language'),
-                value: _isVietnamese,
+                title: Text(l10n.language),
+                subtitle: Text(l10n.switchLanguage),
+                value: languageProvider.isVietnamese,
                 onChanged: (value) {
-                  setState(() {
-                    _isVietnamese = value;
-                  });
+                  languageProvider.toggleLanguage();
                 },
                 secondary: const Icon(
                   Icons.language,
@@ -155,7 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // Project Info Section
             Text(
-              'About This Project',
+              l10n.aboutThisProject,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppDimensions.paddingSmall),
@@ -170,17 +168,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRow('Project', 'Habit Tracker App'),
+                  _buildInfoRow(l10n.project, l10n.projectName),
                   const Divider(height: 24),
-                  _buildInfoRow('Course', 'Mobile Application Development'),
+                  _buildInfoRow(l10n.course, l10n.courseName),
                   const Divider(height: 24),
-                  _buildInfoRow('Student Name', 'Nguyễn Văn A'),
+                  _buildInfoRow(l10n.studentName, l10n.studentNamePlaceholder),
                   const Divider(height: 24),
-                  _buildInfoRow('Student ID', '2024XXXX'),
+                  _buildInfoRow(l10n.studentId, l10n.studentIdPlaceholder),
                   const Divider(height: 24),
-                  _buildInfoRow('Instructor', 'Giảng viên hướng dẫn'),
+                  _buildInfoRow(l10n.instructor, l10n.instructorPlaceholder),
                   const Divider(height: 24),
-                  _buildInfoRow('Version', '1.0.0'),
+                  _buildInfoRow(l10n.version, '1.0.0'),
                 ],
               ),
             ),
@@ -205,28 +203,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: TextStyle(fontSize: 32),
                       ),
                       const SizedBox(width: AppDimensions.paddingMedium),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Habit Tracker',
-                              style: Theme.of(context).textTheme.titleMedium,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.appTitle,
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  l10n.welcomeSlogan,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Build good habits, one day at a time.',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
                     ],
                   ),
                   const SizedBox(height: AppDimensions.paddingMedium),
                   Text(
-                    'This project was developed for the Mobile Development course. '
-                    'It helps users track and build positive habits through daily consistency.',
+                    l10n.aboutApp,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -242,21 +239,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Help & Support'),
-                    content: const Text(
-                      'For help or support, please contact your instructor or visit the project documentation.',
-                    ),
+                    title: Text(l10n.helpAndSupport),
+                    content: Text(l10n.helpMessage),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('OK'),
+                        child: Text(l10n.ok),
                       ),
                     ],
                   ),
                 );
               },
               icon: const Icon(Icons.help_outline),
-              label: const Text('Help & Support'),
+              label: Text(l10n.helpAndSupport),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   vertical: AppDimensions.paddingMedium,

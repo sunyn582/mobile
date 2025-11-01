@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/habit.dart';
 import '../constants/app_constants.dart';
 import '../constants/habit_data.dart';
@@ -47,6 +48,26 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
       return AppColors.primary;
     }
   }
+  
+  String _getLocalizedCategory(BuildContext context, String category) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (category) {
+      case 'Health':
+        return l10n.categoryHealth;
+      case 'Study':
+        return l10n.categoryStudy;
+      case 'Mind':
+        return l10n.categoryMind;
+      case 'Work':
+        return l10n.categoryWork;
+      case 'Social':
+        return l10n.categorySocial;
+      case 'Custom':
+        return l10n.categoryCustom;
+      default:
+        return category;
+    }
+  }
 
   void _saveHabit() {
     if (_formKey.currentState!.validate()) {
@@ -81,15 +102,16 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.habit == null ? 'Add New Habit' : 'Edit Habit'),
+        title: Text(widget.habit == null ? l10n.addNewHabit : l10n.editHabit),
         actions: [
           TextButton(
             onPressed: _saveHabit,
-            child: const Text('Save'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -110,19 +132,19 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
             children: [
               // Habit Name
               Text(
-                'Habit Name',
+                l10n.habitName,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppDimensions.paddingSmall),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  hintText: 'e.g., Morning Meditation',
-                  prefixIcon: Icon(Icons.edit),
+                decoration: InputDecoration(
+                  hintText: l10n.habitNameHint,
+                  prefixIcon: const Icon(Icons.edit),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a habit name';
+                    return l10n.pleaseEnterHabitName;
                   }
                   return null;
                 },
@@ -132,7 +154,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               // Icon Picker
               Text(
-                'Choose Icon',
+                l10n.chooseIcon,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppDimensions.paddingSmall),
@@ -185,7 +207,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               // Category Picker
               Text(
-                'Category',
+                l10n.category,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppDimensions.paddingSmall),
@@ -219,7 +241,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          category,
+                          _getLocalizedCategory(context, category),
                           style: TextStyle(
                             color: isSelected 
                                 ? Colors.white 
@@ -238,7 +260,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               // Color Picker
               Text(
-                'Choose Color',
+                l10n.chooseColor,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppDimensions.paddingSmall),
@@ -287,7 +309,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               // Target Minutes
               Text(
-                'Daily Target',
+                l10n.dailyTarget,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppDimensions.paddingSmall),
@@ -304,7 +326,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '$_targetMinutes minutes',
+                          '$_targetMinutes ${l10n.minutes}',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         Text(
@@ -333,7 +355,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
               // Reminder Time
               Text(
-                'Reminder (Optional)',
+                l10n.reminderOptional,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppDimensions.paddingSmall),
@@ -356,8 +378,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                       Expanded(
                         child: Text(
                           _reminderTime != null
-                              ? 'Remind me at ${_reminderTime!.format(context)}'
-                              : 'Set reminder time',
+                              ? l10n.remindMeAt(_reminderTime!.format(context))
+                              : l10n.setReminderTime,
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       ),
@@ -378,7 +400,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                     backgroundColor: _getColor(_selectedColor),
                   ),
                   child: Text(
-                    widget.habit == null ? 'Create Habit' : 'Update Habit',
+                    widget.habit == null ? l10n.createHabit : l10n.updateHabit,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

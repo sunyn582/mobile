@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/habit.dart';
 import '../constants/app_constants.dart';
 
@@ -70,6 +71,7 @@ class _HabitCardState extends State<HabitCard>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = _getColor();
     final completionRate = widget.habit.getWeeklyCompletionRate();
     final streak = widget.habit.getStreak();
@@ -150,7 +152,7 @@ class _HabitCardState extends State<HabitCard>
                             if (streak > 0) ...[
                               const SizedBox(width: 8),
                               Text(
-                                '🔥 $streak day${streak > 1 ? 's' : ''}',
+                                '🔥 $streak ${streak > 1 ? l10n.days : l10n.day}',
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ],
@@ -194,7 +196,7 @@ class _HabitCardState extends State<HabitCard>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Weekly Progress',
+                        l10n.weeklyProgress,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       Text(
@@ -233,7 +235,7 @@ class _HabitCardState extends State<HabitCard>
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${widget.habit.targetMinutes} mins/day',
+                    l10n.minsPerDay(widget.habit.targetMinutes),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],

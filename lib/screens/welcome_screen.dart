@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../constants/app_constants.dart';
 import 'home_screen.dart';
 
@@ -119,7 +120,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Text(
-                    'Habit Tracker',
+                    AppLocalizations.of(context)!.appTitle,
                     style: Theme.of(context).textTheme.headlineLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -131,7 +132,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Text(
-                    'Build good habits,\none day at a time.',
+                    AppLocalizations.of(context)!.welcomeSlogan,
                     style: Theme.of(context).textTheme.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -155,7 +156,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         ),
                       ),
                       child: Text(
-                        'Get Started',
+                        AppLocalizations.of(context)!.getStarted,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               color: Colors.white,
                             ),

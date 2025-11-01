@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../l10n/app_localizations.dart';
 import '../models/habit.dart';
 import '../constants/app_constants.dart';
 import 'add_habit_screen.dart';
@@ -40,7 +41,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
       bool completed = _habit.completedDates[dateKey] ?? false;
 
       data.add({
-        'day': _getDayName(date.weekday),
+        'day': _getDayName(context, date.weekday),
         'completed': completed,
         'date': date,
       });
@@ -49,22 +50,23 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
     return data;
   }
 
-  String _getDayName(int weekday) {
+  String _getDayName(BuildContext context, int weekday) {
+    final l10n = AppLocalizations.of(context)!;
     switch (weekday) {
       case 1:
-        return 'Mon';
+        return l10n.mon;
       case 2:
-        return 'Tue';
+        return l10n.tue;
       case 3:
-        return 'Wed';
+        return l10n.wed;
       case 4:
-        return 'Thu';
+        return l10n.thu;
       case 5:
-        return 'Fri';
+        return l10n.fri;
       case 6:
-        return 'Sat';
+        return l10n.sat;
       case 7:
-        return 'Sun';
+        return l10n.sun;
       default:
         return '';
     }
@@ -85,16 +87,17 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
     }
   }
 
-  void _deleteHabit() {
+  void _deleteHabit(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Habit'),
-        content: const Text('Are you sure you want to delete this habit?'),
+        title: Text(l10n.deleteHabit),
+        content: Text(l10n.deleteHabitConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -102,7 +105,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
               Navigator.pop(context, null); // Return to home
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -111,6 +114,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = _getColor();
     final weekData = _getLast7DaysData();
     final completionRate = _habit.getWeeklyCompletionRate();
@@ -119,14 +123,14 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Habit Details'),
+        title: Text(l10n.habitDetails),
         actions: [
           IconButton(
             onPressed: _navigateToEdit,
             icon: const Icon(Icons.edit),
           ),
           IconButton(
-            onPressed: _deleteHabit,
+            onPressed: () => _deleteHabit(context),
             icon: const Icon(Icons.delete_outline),
           ),
         ],
@@ -228,7 +232,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                               ),
                         ),
                         Text(
-                          'Day Streak',
+                          l10n.dayStreak,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -263,7 +267,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                               ),
                         ),
                         Text(
-                          'Completion',
+                          l10n.completion,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -287,7 +291,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Weekly Progress',
+                    l10n.weeklyProgress,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: AppDimensions.paddingLarge),
@@ -371,19 +375,19 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Habit Info',
+                    l10n.habitInfo,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: AppDimensions.paddingMedium),
                   _buildInfoRow(Icons.timer_outlined,
-                      '${_habit.targetMinutes} minutes/day'),
+                      l10n.minutesPerDay(_habit.targetMinutes)),
                   const SizedBox(height: AppDimensions.paddingSmall),
                   _buildInfoRow(
-                      Icons.category_outlined, 'Category: ${_habit.category}'),
+                      Icons.category_outlined, l10n.categoryLabel(_habit.category)),
                   if (_habit.reminderTime != null) ...[
                     const SizedBox(height: AppDimensions.paddingSmall),
                     _buildInfoRow(Icons.notifications_outlined,
-                        'Reminder: ${_habit.reminderTime}'),
+                        l10n.reminderLabel(_habit.reminderTime!)),
                   ],
                 ],
               ),

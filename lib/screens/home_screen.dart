@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/habit.dart';
 import '../widgets/habit_card.dart';
 import '../widgets/progress_circle.dart';
@@ -55,14 +56,15 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
   ];
 
-  String _getGreeting() {
+  String _getGreeting(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      return 'Good Morning! ☀️';
+      return l10n.goodMorning;
     } else if (hour < 18) {
-      return 'Good Afternoon! 🌤️';
+      return l10n.goodAfternoon;
     } else {
-      return 'Good Evening! 🌙';
+      return l10n.goodEvening;
     }
   }
 
@@ -129,6 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final completedToday = _getCompletedToday();
     final todayProgress = _getTodayProgress();
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -154,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'My Habits',
+                      l10n.myHabits,
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     IconButton(
@@ -192,12 +195,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _getGreeting(),
+                            _getGreeting(context),
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Keep building great habits!',
+                            l10n.keepBuildingHabits,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
@@ -221,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Today\'s Progress',
+                      l10n.todayProgress,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppDimensions.paddingMedium),
@@ -244,13 +247,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Your Habits',
+                      l10n.yourHabits,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     TextButton.icon(
                       onPressed: _navigateToAddHabit,
                       icon: const Icon(Icons.add),
-                      label: const Text('Add New'),
+                      label: Text(l10n.addNew),
                     ),
                   ],
                 ),
@@ -271,12 +274,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: AppDimensions.paddingMedium),
                             Text(
-                              'No habits yet',
+                              l10n.noHabitsYet,
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                             const SizedBox(height: AppDimensions.paddingSmall),
                             Text(
-                              'Tap "Add New" to create your first habit',
+                              l10n.tapAddNewHabit,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ],
