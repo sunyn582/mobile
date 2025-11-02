@@ -103,18 +103,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToHabitDetail(Habit habit) async {
-    final updatedHabit = await Navigator.push<Habit>(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => HabitDetailScreen(habit: habit),
       ),
     );
 
-    if (updatedHabit != null) {
+    if (result == 'delete') {
+      // Delete the habit from list
+      setState(() {
+        habits.removeWhere((h) => h.id == habit.id);
+      });
+    } else if (result is Habit) {
+      // Update the habit
       setState(() {
         final index = habits.indexWhere((h) => h.id == habit.id);
         if (index != -1) {
-          habits[index] = updatedHabit;
+          habits[index] = result;
         }
       });
     }

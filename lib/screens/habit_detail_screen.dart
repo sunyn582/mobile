@@ -102,7 +102,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Close dialog
-              Navigator.pop(context, null); // Return to home
+              Navigator.pop(context, 'delete'); // Return 'delete' signal to home
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: Text(l10n.delete),
