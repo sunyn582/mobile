@@ -5,6 +5,7 @@ import 'l10n/app_localizations.dart';
 import 'constants/app_theme.dart';
 import 'utils/theme_provider.dart';
 import 'utils/language_provider.dart';
+import 'utils/user_provider.dart';
 import 'screens/welcome_screen.dart';
 
 void main() {
@@ -13,6 +14,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
       child: const HabitTrackerApp(),
     ),

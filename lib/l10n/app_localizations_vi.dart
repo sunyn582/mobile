@@ -262,4 +262,58 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get days => 'ngày';
+
+  @override
+  String get editProfile => 'Chỉnh Sửa Hồ Sơ';
+
+  @override
+  String get changePhoto => 'Thay Đổi Ảnh';
+
+  @override
+  String get takePhoto => 'Chụp Ảnh';
+
+  @override
+  String get chooseFromGallery => 'Chọn Từ Thư Viện';
+
+  @override
+  String get removePhoto => 'Xóa Ảnh';
+
+  @override
+  String get name => 'Tên';
+
+  @override
+  String get bio => 'Tiểu Sử';
+
+  @override
+  String get pleaseEnterName => 'Vui lòng nhập tên của bạn';
+
+  @override
+  String get pleaseEnterBio => 'Vui lòng nhập tiểu sử của bạn';
+
+  @override
+  String get saveChanges => 'Lưu Thay Đổi';
+
+  @override
+  String get personalInformation => 'Thông Tin Cá Nhân';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get emailHint => 'example@email.com';
+
+  @override
+  String get phone => 'Số Điện Thoại';
+
+  @override
+  String get phoneHint => '+84 123 456 789';
+
+  @override
+  String get pleaseEnterValidEmail => 'Vui lòng nhập địa chỉ email hợp lệ';
+
+  @override
+  String get groupInformation => 'Thông Tin Nhóm';
+
+  @override
+  String get viewProjectDetails => 'Xem thông tin dự án và nhóm';
 }

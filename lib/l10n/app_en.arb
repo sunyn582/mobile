@@ -402,5 +402,95 @@
   "days": "days",
   "@days": {
     "description": "Multiple days"
+  },
+  
+  "editProfile": "Edit Profile",
+  "@editProfile": {
+    "description": "Edit profile title"
+  },
+  
+  "changePhoto": "Change Photo",
+  "@changePhoto": {
+    "description": "Change photo button"
+  },
+  
+  "takePhoto": "Take Photo",
+  "@takePhoto": {
+    "description": "Take photo option"
+  },
+  
+  "chooseFromGallery": "Choose from Gallery",
+  "@chooseFromGallery": {
+    "description": "Choose from gallery option"
+  },
+  
+  "removePhoto": "Remove Photo",
+  "@removePhoto": {
+    "description": "Remove photo option"
+  },
+  
+  "name": "Name",
+  "@name": {
+    "description": "Name label"
+  },
+  
+  "bio": "Bio",
+  "@bio": {
+    "description": "Bio label"
+  },
+  
+  "pleaseEnterName": "Please enter your name",
+  "@pleaseEnterName": {
+    "description": "Validation message for name"
+  },
+  
+  "pleaseEnterBio": "Please enter your bio",
+  "@pleaseEnterBio": {
+    "description": "Validation message for bio"
+  },
+  
+  "saveChanges": "Save Changes",
+  "@saveChanges": {
+    "description": "Save changes button"
+  },
+  
+  "personalInformation": "Personal Information",
+  "@personalInformation": {
+    "description": "Personal information section title"
+  },
+  
+  "email": "Email",
+  "@email": {
+    "description": "Email label"
+  },
+  
+  "emailHint": "example@email.com",
+  "@emailHint": {
+    "description": "Email hint text"
+  },
+  
+  "phone": "Phone",
+  "@phone": {
+    "description": "Phone label"
+  },
+  
+  "phoneHint": "+84 123 456 789",
+  "@phoneHint": {
+    "description": "Phone hint text"
+  },
+  
+  "pleaseEnterValidEmail": "Please enter a valid email address",
+  "@pleaseEnterValidEmail": {
+    "description": "Validation message for email"
+  },
+  
+  "groupInformation": "Group Information",
+  "@groupInformation": {
+    "description": "Group information title"
+  },
+  
+  "viewProjectDetails": "View project and team details",
+  "@viewProjectDetails": {
+    "description": "View project details subtitle"
   }
 }

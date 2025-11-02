@@ -263,4 +263,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get days => 'days';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get changePhoto => 'Change Photo';
+
+  @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get chooseFromGallery => 'Choose from Gallery';
+
+  @override
+  String get removePhoto => 'Remove Photo';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get bio => 'Bio';
+
+  @override
+  String get pleaseEnterName => 'Please enter your name';
+
+  @override
+  String get pleaseEnterBio => 'Please enter your bio';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get personalInformation => 'Personal Information';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get emailHint => 'example@email.com';
+
+  @override
+  String get phone => 'Phone';
+
+  @override
+  String get phoneHint => '+84 123 456 789';
+
+  @override
+  String get pleaseEnterValidEmail => 'Please enter a valid email address';
+
+  @override
+  String get groupInformation => 'Group Information';
+
+  @override
+  String get viewProjectDetails => 'View project and team details';
 }

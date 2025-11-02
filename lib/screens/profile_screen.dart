@@ -1,10 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../constants/app_constants.dart';
 import '../utils/theme_provider.dart';
 import '../utils/language_provider.dart';
+import '../utils/user_provider.dart';
 import 'theme_loading_screen.dart';
+import 'edit_profile_screen.dart';
+import 'group_info_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -39,6 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
     final themeProvider = Provider.of<ThemeProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
     final isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
@@ -68,30 +73,134 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Column(
                 children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '👤',
-                        style: TextStyle(fontSize: 48),
-                      ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const EditProfileScreen(),
+                        ),
+                      );
+                    },
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
+                          ),
+                          child: ClipOval(
+                            child: userProvider.userProfile.imagePath != null
+                                ? Image.file(
+                                    File(userProvider.userProfile.imagePath!),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Center(
+                                        child: Text(
+                                          '👤',
+                                          style: TextStyle(fontSize: 48),
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : const Center(
+                                    child: Text(
+                                      '👤',
+                                      style: TextStyle(fontSize: 48),
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDarkMode ? AppColors.darkCard : Colors.white,
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: AppDimensions.paddingMedium),
                   Text(
-                    l10n.userName,
+                    userProvider.userProfile.name,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: AppDimensions.paddingSmall),
                   Text(
-                    l10n.buildingHabitsEveryDay,
+                    userProvider.userProfile.bio,
                     style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
                   ),
+                  const SizedBox(height: AppDimensions.paddingMedium),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const EditProfileScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit),
+                    label: Text(l10n.editProfile),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: AppDimensions.paddingLarge),
+
+            // User Information Section
+            Text(
+              l10n.personalInformation,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: AppDimensions.paddingSmall),
+
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.paddingMedium),
+              decoration: BoxDecoration(
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                boxShadow: AppShadows.small,
+              ),
+              child: Column(
+                children: [
+                  _buildInfoRow(l10n.name, userProvider.userProfile.name),
+                  if (userProvider.userProfile.email?.isNotEmpty ?? false) ...[
+                    const Divider(height: 24),
+                    _buildInfoRow(l10n.email, userProvider.userProfile.email!),
+                  ],
+                  if (userProvider.userProfile.phone?.isNotEmpty ?? false) ...[
+                    const Divider(height: 24),
+                    _buildInfoRow(l10n.phone, userProvider.userProfile.phone!),
+                  ],
+                  const Divider(height: 24),
+                  _buildInfoRow(l10n.bio, userProvider.userProfile.bio),
                 ],
               ),
             ),
@@ -151,35 +260,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: AppDimensions.paddingLarge),
 
-            // Project Info Section
-            Text(
-              l10n.aboutThisProject,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppDimensions.paddingSmall),
-
+            // Group Info Button
             Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingMedium),
               decoration: BoxDecoration(
                 color: isDarkMode ? AppColors.darkCard : Colors.white,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 boxShadow: AppShadows.small,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow(l10n.project, l10n.projectName),
-                  const Divider(height: 24),
-                  _buildInfoRow(l10n.course, l10n.courseName),
-                  const Divider(height: 24),
-                  _buildInfoRow(l10n.studentName, l10n.studentNamePlaceholder),
-                  const Divider(height: 24),
-                  _buildInfoRow(l10n.studentId, l10n.studentIdPlaceholder),
-                  const Divider(height: 24),
-                  _buildInfoRow(l10n.instructor, l10n.instructorPlaceholder),
-                  const Divider(height: 24),
-                  _buildInfoRow(l10n.version, '1.0.0'),
-                ],
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.group,
+                    color: AppColors.primary,
+                  ),
+                ),
+                title: Text(l10n.groupInformation),
+                subtitle: Text(l10n.viewProjectDetails),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GroupInfoScreen(),
+                    ),
+                  );
+                },
               ),
             ),
 
@@ -213,18 +323,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  l10n.welcomeSlogan,
+                                  '${l10n.version}: 1.0.0',
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               ],
                             ),
                           ),
                     ],
-                  ),
-                  const SizedBox(height: AppDimensions.paddingMedium),
-                  Text(
-                    l10n.aboutApp,
-                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),

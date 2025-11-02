@@ -583,6 +583,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'days'**
   String get days;
+
+  /// Edit profile title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// Change photo button
+  ///
+  /// In en, this message translates to:
+  /// **'Change Photo'**
+  String get changePhoto;
+
+  /// Take photo option
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get takePhoto;
+
+  /// Choose from gallery option
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Gallery'**
+  String get chooseFromGallery;
+
+  /// Remove photo option
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Photo'**
+  String get removePhoto;
+
+  /// Name label
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// Bio label
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get bio;
+
+  /// Validation message for name
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your name'**
+  String get pleaseEnterName;
+
+  /// Validation message for bio
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your bio'**
+  String get pleaseEnterBio;
+
+  /// Save changes button
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// Personal information section title
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInformation;
+
+  /// Email label
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// Email hint text
+  ///
+  /// In en, this message translates to:
+  /// **'example@email.com'**
+  String get emailHint;
+
+  /// Phone label
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phone;
+
+  /// Phone hint text
+  ///
+  /// In en, this message translates to:
+  /// **'+84 123 456 789'**
+  String get phoneHint;
+
+  /// Validation message for email
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get pleaseEnterValidEmail;
+
+  /// Group information title
+  ///
+  /// In en, this message translates to:
+  /// **'Group Information'**
+  String get groupInformation;
+
+  /// View project details subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'View project and team details'**
+  String get viewProjectDetails;
 }
 
 class _AppLocalizationsDelegate
