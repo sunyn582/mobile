@@ -7,6 +7,7 @@ import '../constants/app_constants.dart';
 import 'add_habit_screen.dart';
 import 'habit_detail_screen.dart';
 import 'profile_screen.dart';
+import 'bad_habits_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
       category: 'Mind',
       color: '#6FCF97',
       targetMinutes: 15,
+      habitType: 'good',
       completedDates: {
         '2025-10-28': true,
         '2025-10-29': true,
@@ -37,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
       category: 'Study',
       color: '#2F80ED',
       targetMinutes: 30,
+      habitType: 'good',
       completedDates: {
         '2025-10-28': true,
         '2025-10-29': false,
@@ -50,9 +53,32 @@ class _HomeScreenState extends State<HomeScreen> {
       category: 'Health',
       color: '#56CCF2',
       targetMinutes: 5,
+      habitType: 'good',
       completedDates: {
         '2025-10-30': true,
       },
+    ),
+    Habit(
+      id: '4',
+      name: 'Smoking',
+      icon: '🚬',
+      category: 'Health',
+      color: '#EB5757',
+      targetMinutes: 0,
+      habitType: 'bad',
+      completedDates: {},
+      description: 'Hút thuốc gây hại nghiêm trọng cho sức khỏe, ảnh hưởng đến phổi, tim mạch và tăng nguy cơ ung thư.',
+    ),
+    Habit(
+      id: '5',
+      name: 'Late Night Social Media',
+      icon: '📱',
+      category: 'Health',
+      color: '#EB5757',
+      targetMinutes: 0,
+      habitType: 'bad',
+      completedDates: {},
+      description: 'Sử dụng điện thoại vào ban đêm làm giảm chất lượng giấc ngủ, ảnh hưởng đến sức khỏe tinh thần và thể chất.',
     ),
   ];
 
@@ -70,12 +96,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int _getCompletedToday() {
     final today = DateTime.now();
-    return habits.where((habit) => habit.isCompletedOnDate(today)).length;
+    // Only count good habits for progress
+    final goodHabits = habits.where((h) => h.habitType == 'good');
+    return goodHabits.where((habit) => habit.isCompletedOnDate(today)).length;
   }
 
   double _getTodayProgress() {
-    if (habits.isEmpty) return 0;
-    return _getCompletedToday() / habits.length;
+    final goodHabits = habits.where((h) => h.habitType == 'good').toList();
+    if (goodHabits.isEmpty) return 0;
+    return _getCompletedToday() / goodHabits.length;
   }
 
   void _toggleHabit(Habit habit) {
@@ -130,7 +159,108 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const ProfileScreen(),
+        builder: (context) => ProfileScreen(habits: habits),
+      ),
+    );
+  }
+
+  // Get habits by type
+  List<Habit> _getHabitsByType(String type) {
+    return habits.where((h) => h.habitType == type).toList();
+  }
+
+  // Build bad habits notification banner
+  Widget _buildBadHabitsNotification() {
+    final badHabits = _getHabitsByType('bad');
+    if (badHabits.isEmpty) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BadHabitsScreen(badHabits: badHabits),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingMedium,
+          vertical: AppDimensions.paddingSmall,
+        ),
+        padding: const EdgeInsets.all(AppDimensions.paddingMedium),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          border: Border.all(color: Colors.red.withValues(alpha: 0.3), width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Thói quen cần bỏ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red.shade700,
+                    fontSize: 14,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${badHabits.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_ios, color: Colors.red, size: 16),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: badHabits.map((habit) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(habit.icon, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(width: 6),
+                      Text(
+                        habit.name,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.red.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -141,6 +271,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final completedToday = _getCompletedToday();
     final todayProgress = _getTodayProgress();
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final goodHabits = _getHabitsByType('good');
+    final goodHabitsCount = goodHabits.length;
 
     return Scaffold(
       body: Container(
@@ -181,6 +313,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
+
+              // Bad Habits Notification (if any)
+              _buildBadHabitsNotification(),
 
               // Greeting Section
               Container(
@@ -236,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: AppDimensions.paddingMedium),
                     ProgressCircle(
                       progress: todayProgress,
-                      centerText: '$completedToday/${habits.length}',
+                      centerText: '$completedToday/$goodHabitsCount',
                     ),
                   ],
                 ),
@@ -244,7 +379,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: AppDimensions.paddingLarge),
 
-              // Habits List Header
+              // Good Habits List Header
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingMedium,
@@ -252,9 +387,32 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      l10n.yourHabits,
-                      style: Theme.of(context).textTheme.titleMedium,
+                    Row(
+                      children: [
+                        Text(
+                          'Thói quen tốt',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${goodHabits.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     TextButton.icon(
                       onPressed: _navigateToAddHabit,
@@ -267,37 +425,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: AppDimensions.paddingSmall),
 
-              // Habits List
+              // Good Habits List
               Expanded(
-                child: habits.isEmpty
+                child: goodHabits.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              '🌱',
-                              style: TextStyle(fontSize: 64),
-                            ),
-                            const SizedBox(height: AppDimensions.paddingMedium),
-                            Text(
-                              l10n.noHabitsYet,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: AppDimensions.paddingSmall),
-                            Text(
-                              l10n.tapAddNewHabit,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
+                        child: Text(
+                          'Chưa có thói quen tốt nào.\nHãy thêm thói quen tốt để bắt đầu!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
                         ),
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppDimensions.paddingMedium,
                         ),
-                        itemCount: habits.length,
+                        itemCount: goodHabits.length,
                         itemBuilder: (context, index) {
-                          final habit = habits[index];
+                          final habit = goodHabits[index];
                           return HabitCard(
                             habit: habit,
                             onTap: () => _navigateToHabitDetail(habit),

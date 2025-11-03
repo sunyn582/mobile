@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../constants/app_constants.dart';
 import '../utils/theme_provider.dart';
@@ -18,6 +19,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _bioController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
+  late TextEditingController _medicalHistoryController;
+  late TextEditingController _heightController;
+  late TextEditingController _weightController;
+  late TextEditingController _healthStatusController;
+  DateTime? _selectedDateOfBirth;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -28,6 +34,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _bioController = TextEditingController(text: userProvider.userProfile.bio);
     _emailController = TextEditingController(text: userProvider.userProfile.email ?? '');
     _phoneController = TextEditingController(text: userProvider.userProfile.phone ?? '');
+    _medicalHistoryController = TextEditingController(text: userProvider.userProfile.medicalHistory ?? '');
+    _heightController = TextEditingController(text: userProvider.userProfile.height?.toString() ?? '');
+    _weightController = TextEditingController(text: userProvider.userProfile.weight?.toString() ?? '');
+    _healthStatusController = TextEditingController(text: userProvider.userProfile.currentHealthStatus ?? '');
+    _selectedDateOfBirth = userProvider.userProfile.dateOfBirth;
   }
 
   @override
@@ -36,7 +47,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _bioController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _medicalHistoryController.dispose();
+    _heightController.dispose();
+    _weightController.dispose();
+    _healthStatusController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDateOfBirth(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateOfBirth ?? DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDateOfBirth) {
+      setState(() {
+        _selectedDateOfBirth = picked;
+      });
+    }
   }
 
   void _showImageSourceDialog(BuildContext context, UserProvider userProvider) {
@@ -97,6 +126,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         bio: _bioController.text.trim(),
         email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
         phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+        dateOfBirth: _selectedDateOfBirth,
+        medicalHistory: _medicalHistoryController.text.trim().isEmpty ? null : _medicalHistoryController.text.trim(),
+        height: _heightController.text.trim().isEmpty ? null : double.tryParse(_heightController.text.trim()),
+        weight: _weightController.text.trim().isEmpty ? null : double.tryParse(_weightController.text.trim()),
+        currentHealthStatus: _healthStatusController.text.trim().isEmpty ? null : _healthStatusController.text.trim(),
       );
       if (mounted) {
         Navigator.pop(context);
@@ -325,6 +359,139 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       }
                       return null;
                     },
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.paddingMedium),
+
+                // Date of Birth Field
+                GestureDetector(
+                  onTap: () => _selectDateOfBirth(context),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDarkMode ? AppColors.darkCard : Colors.white,
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                      boxShadow: AppShadows.small,
+                    ),
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          labelText: l10n.dateOfBirth,
+                          hintText: l10n.selectDate,
+                          prefixIcon: const Icon(Icons.calendar_today, color: AppColors.primary),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: isDarkMode ? AppColors.darkCard : Colors.white,
+                        ),
+                        controller: TextEditingController(
+                          text: _selectedDateOfBirth != null
+                              ? DateFormat('dd/MM/yyyy').format(_selectedDateOfBirth!)
+                              : '',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.paddingMedium),
+
+                // Height Field
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? AppColors.darkCard : Colors.white,
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                    boxShadow: AppShadows.small,
+                  ),
+                  child: TextFormField(
+                    controller: _heightController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: l10n.height,
+                      hintText: l10n.heightHint,
+                      prefixIcon: const Icon(Icons.height, color: AppColors.primary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: isDarkMode ? AppColors.darkCard : Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.paddingMedium),
+
+                // Weight Field
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? AppColors.darkCard : Colors.white,
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                    boxShadow: AppShadows.small,
+                  ),
+                  child: TextFormField(
+                    controller: _weightController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: l10n.weight,
+                      hintText: l10n.weightHint,
+                      prefixIcon: const Icon(Icons.monitor_weight, color: AppColors.primary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: isDarkMode ? AppColors.darkCard : Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.paddingMedium),
+
+                // Medical History Field
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? AppColors.darkCard : Colors.white,
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                    boxShadow: AppShadows.small,
+                  ),
+                  child: TextFormField(
+                    controller: _medicalHistoryController,
+                    decoration: InputDecoration(
+                      labelText: l10n.medicalHistory,
+                      hintText: l10n.medicalHistoryHint,
+                      prefixIcon: const Icon(Icons.medical_information, color: AppColors.primary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: isDarkMode ? AppColors.darkCard : Colors.white,
+                    ),
+                    maxLines: 3,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.paddingMedium),
+
+                // Current Health Status Field
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? AppColors.darkCard : Colors.white,
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                    boxShadow: AppShadows.small,
+                  ),
+                  child: TextFormField(
+                    controller: _healthStatusController,
+                    decoration: InputDecoration(
+                      labelText: l10n.currentHealthStatus,
+                      hintText: l10n.healthStatusHint,
+                      prefixIcon: const Icon(Icons.favorite, color: AppColors.primary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: isDarkMode ? AppColors.darkCard : Colors.white,
+                    ),
+                    maxLines: 2,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.paddingXLarge),

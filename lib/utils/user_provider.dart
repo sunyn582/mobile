@@ -49,12 +49,22 @@ class UserProvider extends ChangeNotifier {
     String? bio,
     String? email,
     String? phone,
+    DateTime? dateOfBirth,
+    String? medicalHistory,
+    double? height,
+    double? weight,
+    String? currentHealthStatus,
   }) async {
     _userProfile = _userProfile.copyWith(
       name: name,
       bio: bio,
       email: email,
       phone: phone,
+      dateOfBirth: dateOfBirth,
+      medicalHistory: medicalHistory,
+      height: height,
+      weight: weight,
+      currentHealthStatus: currentHealthStatus,
     );
     await _saveUserProfile();
     notifyListeners();

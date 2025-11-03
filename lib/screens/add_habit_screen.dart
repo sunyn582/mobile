@@ -3,6 +3,7 @@ import '../l10n/app_localizations.dart';
 import '../models/habit.dart';
 import '../constants/app_constants.dart';
 import '../constants/habit_data.dart';
+import '../utils/habit_classifier.dart';
 
 class AddHabitScreen extends StatefulWidget {
   final Habit? habit;
@@ -22,6 +23,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
   String _selectedColor = '#6FCF97';
   int _targetMinutes = 15;
   TimeOfDay? _reminderTime;
+  bool _isAnalyzing = false;
 
   @override
   void initState() {
@@ -69,8 +71,26 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
     }
   }
 
-  void _saveHabit() {
+  void _saveHabit() async {
     if (_formKey.currentState!.validate()) {
+      // Show loading screen
+      setState(() {
+        _isAnalyzing = true;
+      });
+
+      // Simulate analysis delay
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (!mounted) return;
+
+      // Classify habit
+      final habitType = HabitClassifier.classifyHabit(_nameController.text);
+      final suggestions = HabitClassifier.findSimilarHabits(_nameController.text);
+      
+      final suggestedHabitNames = suggestions
+          .map((s) => s['displayName'] as String)
+          .toList();
+
       final habit = Habit(
         id: widget.habit?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text,
@@ -81,8 +101,15 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         reminderTime: _reminderTime?.format(context),
         completedDates: widget.habit?.completedDates ?? {},
         createdAt: widget.habit?.createdAt ?? DateTime.now(),
+        habitType: habitType,
+        suggestedHabits: suggestedHabitNames.isNotEmpty ? suggestedHabitNames : null,
       );
 
+      setState(() {
+        _isAnalyzing = false;
+      });
+
+      if (!mounted) return;
       Navigator.pop(context, habit);
     }
   }
@@ -110,24 +137,26 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         title: Text(widget.habit == null ? l10n.addNewHabit : l10n.editHabit),
         actions: [
           TextButton(
-            onPressed: _saveHabit,
+            onPressed: _isAnalyzing ? null : _saveHabit,
             child: Text(l10n.save),
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: isDarkMode
-              ? const LinearGradient(
-                  colors: [AppColors.darkBackground, Color(0xFF2D2D2D)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                )
-              : AppColors.backgroundGradient,
-        ),
-        child: Form(
-          key: _formKey,
-          child: ListView(
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: isDarkMode
+                  ? const LinearGradient(
+                      colors: [AppColors.darkBackground, Color(0xFF2D2D2D)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    )
+                  : AppColors.backgroundGradient,
+            ),
+            child: Form(
+              key: _formKey,
+              child: ListView(
             padding: const EdgeInsets.all(AppDimensions.paddingMedium),
             children: [
               // Habit Name
@@ -395,7 +424,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _saveHabit,
+                  onPressed: _isAnalyzing ? null : _saveHabit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _getColor(_selectedColor),
                   ),
@@ -411,6 +440,38 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
             ],
           ),
         ),
+      ),
+      // Loading Overlay
+      if (_isAnalyzing)
+        Container(
+          color: Colors.black54,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Đang phân tích thói quen...',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Vui lòng đợi trong giây lát',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        ],
       ),
     );
   }

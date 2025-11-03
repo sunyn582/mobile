@@ -316,4 +316,41 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get viewProjectDetails => 'Xem thông tin dự án và nhóm';
+
+  @override
+  String get dateOfBirth => 'Ngày Sinh';
+
+  @override
+  String get selectDate => 'Chọn Ngày';
+
+  @override
+  String get medicalHistory => 'Tiền Sử Bệnh';
+
+  @override
+  String get medicalHistoryHint =>
+      'VD: Dị ứng, bệnh mãn tính, phẫu thuật trước đây...';
+
+  @override
+  String get height => 'Chiều Cao (cm)';
+
+  @override
+  String get heightHint => 'VD: 170';
+
+  @override
+  String get weight => 'Cân Nặng (kg)';
+
+  @override
+  String get weightHint => 'VD: 65';
+
+  @override
+  String get currentHealthStatus => 'Tình Trạng Sức Khỏe Hiện Tại';
+
+  @override
+  String get healthStatusHint => 'VD: Tốt, Đang hồi phục, Đang điều trị...';
+
+  @override
+  String get healthInformation => 'Thông Tin Sức Khỏe';
+
+  @override
+  String get bmi => 'Chỉ số BMI';
 }

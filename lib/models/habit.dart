@@ -8,6 +8,9 @@ class Habit {
   final String? reminderTime;
   final Map<String, bool> completedDates; // Date string -> completed status
   final DateTime createdAt;
+  final String habitType; // 'good', 'bad', or 'uncertain'
+  final List<String>? suggestedHabits; // Suggestions for uncertain habits
+  final String? description; // Description for the habit
 
   Habit({
     required this.id,
@@ -19,6 +22,9 @@ class Habit {
     this.reminderTime,
     Map<String, bool>? completedDates,
     DateTime? createdAt,
+    this.habitType = 'uncertain',
+    this.suggestedHabits,
+    this.description,
   })  : completedDates = completedDates ?? {},
         createdAt = createdAt ?? DateTime.now();
 
@@ -44,6 +50,9 @@ class Habit {
       reminderTime: reminderTime,
       completedDates: newCompletedDates,
       createdAt: createdAt,
+      habitType: habitType,
+      suggestedHabits: suggestedHabits,
+      description: description,
     );
   }
 
@@ -92,6 +101,9 @@ class Habit {
       'reminderTime': reminderTime,
       'completedDates': completedDates,
       'createdAt': createdAt.toIso8601String(),
+      'habitType': habitType,
+      'suggestedHabits': suggestedHabits,
+      'description': description,
     };
   }
 
@@ -107,6 +119,11 @@ class Habit {
       reminderTime: json['reminderTime'],
       completedDates: Map<String, bool>.from(json['completedDates'] ?? {}),
       createdAt: DateTime.parse(json['createdAt']),
+      habitType: json['habitType'] ?? 'uncertain',
+      suggestedHabits: json['suggestedHabits'] != null 
+          ? List<String>.from(json['suggestedHabits']) 
+          : null,
+      description: json['description'],
     );
   }
 
@@ -121,6 +138,9 @@ class Habit {
     String? reminderTime,
     Map<String, bool>? completedDates,
     DateTime? createdAt,
+    String? habitType,
+    List<String>? suggestedHabits,
+    String? description,
   }) {
     return Habit(
       id: id ?? this.id,
@@ -132,6 +152,9 @@ class Habit {
       reminderTime: reminderTime ?? this.reminderTime,
       completedDates: completedDates ?? this.completedDates,
       createdAt: createdAt ?? this.createdAt,
+      habitType: habitType ?? this.habitType,
+      suggestedHabits: suggestedHabits ?? this.suggestedHabits,
+      description: description ?? this.description,
     );
   }
 }

@@ -4,6 +4,11 @@ class UserProfile {
   final String? email;
   final String? phone;
   final String? imagePath; // Local file path for profile image
+  final DateTime? dateOfBirth; // Ngày tháng năm sinh
+  final String? medicalHistory; // Tiền sử bệnh
+  final double? height; // Chiều cao (cm)
+  final double? weight; // Cân nặng (kg)
+  final String? currentHealthStatus; // Tình trạng sức khỏe hiện tại
 
   UserProfile({
     required this.name,
@@ -11,6 +16,11 @@ class UserProfile {
     this.email,
     this.phone,
     this.imagePath,
+    this.dateOfBirth,
+    this.medicalHistory,
+    this.height,
+    this.weight,
+    this.currentHealthStatus,
   });
 
   // Convert to JSON
@@ -21,6 +31,11 @@ class UserProfile {
       'email': email,
       'phone': phone,
       'imagePath': imagePath,
+      'dateOfBirth': dateOfBirth?.toIso8601String(),
+      'medicalHistory': medicalHistory,
+      'height': height,
+      'weight': weight,
+      'currentHealthStatus': currentHealthStatus,
     };
   }
 
@@ -32,6 +47,13 @@ class UserProfile {
       email: json['email'],
       phone: json['phone'],
       imagePath: json['imagePath'],
+      dateOfBirth: json['dateOfBirth'] != null 
+          ? DateTime.parse(json['dateOfBirth']) 
+          : null,
+      medicalHistory: json['medicalHistory'],
+      height: json['height']?.toDouble(),
+      weight: json['weight']?.toDouble(),
+      currentHealthStatus: json['currentHealthStatus'],
     );
   }
 
@@ -42,6 +64,11 @@ class UserProfile {
     String? email,
     String? phone,
     String? imagePath,
+    DateTime? dateOfBirth,
+    String? medicalHistory,
+    double? height,
+    double? weight,
+    String? currentHealthStatus,
   }) {
     return UserProfile(
       name: name ?? this.name,
@@ -49,6 +76,11 @@ class UserProfile {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       imagePath: imagePath ?? this.imagePath,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      medicalHistory: medicalHistory ?? this.medicalHistory,
+      height: height ?? this.height,
+      weight: weight ?? this.weight,
+      currentHealthStatus: currentHealthStatus ?? this.currentHealthStatus,
     );
   }
 

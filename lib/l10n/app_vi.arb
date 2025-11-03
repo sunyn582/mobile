@@ -99,5 +99,17 @@
   "phoneHint": "+84 123 456 789",
   "pleaseEnterValidEmail": "Vui lòng nhập địa chỉ email hợp lệ",
   "groupInformation": "Thông Tin Nhóm",
-  "viewProjectDetails": "Xem thông tin dự án và nhóm"
+  "viewProjectDetails": "Xem thông tin dự án và nhóm",
+  "dateOfBirth": "Ngày Sinh",
+  "selectDate": "Chọn Ngày",
+  "medicalHistory": "Tiền Sử Bệnh",
+  "medicalHistoryHint": "VD: Dị ứng, bệnh mãn tính, phẫu thuật trước đây...",
+  "height": "Chiều Cao (cm)",
+  "heightHint": "VD: 170",
+  "weight": "Cân Nặng (kg)",
+  "weightHint": "VD: 65",
+  "currentHealthStatus": "Tình Trạng Sức Khỏe Hiện Tại",
+  "healthStatusHint": "VD: Tốt, Đang hồi phục, Đang điều trị...",
+  "healthInformation": "Thông Tin Sức Khỏe",
+  "bmi": "Chỉ số BMI"
 }

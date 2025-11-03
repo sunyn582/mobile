@@ -492,5 +492,65 @@
   "viewProjectDetails": "View project and team details",
   "@viewProjectDetails": {
     "description": "View project details subtitle"
+  },
+  
+  "dateOfBirth": "Date of Birth",
+  "@dateOfBirth": {
+    "description": "Date of birth label"
+  },
+  
+  "selectDate": "Select Date",
+  "@selectDate": {
+    "description": "Select date button"
+  },
+  
+  "medicalHistory": "Medical History",
+  "@medicalHistory": {
+    "description": "Medical history label"
+  },
+  
+  "medicalHistoryHint": "e.g., Allergies, chronic conditions, previous surgeries...",
+  "@medicalHistoryHint": {
+    "description": "Medical history hint text"
+  },
+  
+  "height": "Height (cm)",
+  "@height": {
+    "description": "Height label"
+  },
+  
+  "heightHint": "e.g., 170",
+  "@heightHint": {
+    "description": "Height hint text"
+  },
+  
+  "weight": "Weight (kg)",
+  "@weight": {
+    "description": "Weight label"
+  },
+  
+  "weightHint": "e.g., 65",
+  "@weightHint": {
+    "description": "Weight hint text"
+  },
+  
+  "currentHealthStatus": "Current Health Status",
+  "@currentHealthStatus": {
+    "description": "Current health status label"
+  },
+  
+  "healthStatusHint": "e.g., Good, Recovering, Under treatment...",
+  "@healthStatusHint": {
+    "description": "Health status hint text"
+  },
+  
+  "healthInformation": "Health Information",
+  "@healthInformation": {
+    "description": "Health information section title"
+  },
+  
+  "bmi": "BMI",
+  "@bmi": {
+    "description": "BMI label"
   }
 }

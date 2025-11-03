@@ -691,6 +691,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View project and team details'**
   String get viewProjectDetails;
+
+  /// Date of birth label
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get dateOfBirth;
+
+  /// Select date button
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date'**
+  String get selectDate;
+
+  /// Medical history label
+  ///
+  /// In en, this message translates to:
+  /// **'Medical History'**
+  String get medicalHistory;
+
+  /// Medical history hint text
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Allergies, chronic conditions, previous surgeries...'**
+  String get medicalHistoryHint;
+
+  /// Height label
+  ///
+  /// In en, this message translates to:
+  /// **'Height (cm)'**
+  String get height;
+
+  /// Height hint text
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., 170'**
+  String get heightHint;
+
+  /// Weight label
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (kg)'**
+  String get weight;
+
+  /// Weight hint text
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., 65'**
+  String get weightHint;
+
+  /// Current health status label
+  ///
+  /// In en, this message translates to:
+  /// **'Current Health Status'**
+  String get currentHealthStatus;
+
+  /// Health status hint text
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Good, Recovering, Under treatment...'**
+  String get healthStatusHint;
+
+  /// Health information section title
+  ///
+  /// In en, this message translates to:
+  /// **'Health Information'**
+  String get healthInformation;
+
+  /// BMI label
+  ///
+  /// In en, this message translates to:
+  /// **'BMI'**
+  String get bmi;
 }
 
 class _AppLocalizationsDelegate

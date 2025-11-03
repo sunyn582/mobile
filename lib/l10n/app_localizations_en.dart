@@ -317,4 +317,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewProjectDetails => 'View project and team details';
+
+  @override
+  String get dateOfBirth => 'Date of Birth';
+
+  @override
+  String get selectDate => 'Select Date';
+
+  @override
+  String get medicalHistory => 'Medical History';
+
+  @override
+  String get medicalHistoryHint =>
+      'e.g., Allergies, chronic conditions, previous surgeries...';
+
+  @override
+  String get height => 'Height (cm)';
+
+  @override
+  String get heightHint => 'e.g., 170';
+
+  @override
+  String get weight => 'Weight (kg)';
+
+  @override
+  String get weightHint => 'e.g., 65';
+
+  @override
+  String get currentHealthStatus => 'Current Health Status';
+
+  @override
+  String get healthStatusHint => 'e.g., Good, Recovering, Under treatment...';
+
+  @override
+  String get healthInformation => 'Health Information';
+
+  @override
+  String get bmi => 'BMI';
 }
