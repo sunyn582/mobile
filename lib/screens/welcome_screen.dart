@@ -1,10 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../constants/app_constants.dart';
+import '../models/user_profile.dart';
+import '../models/habit.dart';
+import '../utils/user_provider.dart';
+import '../utils/user_storage_service.dart';
 import 'home_screen.dart';
+import 'onboarding_profile_screen.dart';
+import 'current_habits_input_screen.dart';
+import 'habit_analysis_result_screen.dart';
+
+/// HƯỚNG DẪN CHUYỂN ĐỔI GIỮA 3 TÀI KHOẢN TRONG CODE:
+/// 
+/// 1. TÀI KHOẢN ĐANG DÙNG (Current User):
+///    - await UserStorageService.getCurrentUser()
+///    - await UserStorageService.saveCurrentUser(profile)
+/// 
+/// 2. TÀI KHOẢN CŨ (Previous User):
+///    - await UserStorageService.getPreviousUser()
+///    - Tự động được backup khi lưu người mới
+/// 
+/// 3. CHUYỂN ĐỔI TÀI KHOẢN:
+///    - Chuyển từ cũ sang hiện tại:
+///      await UserStorageService.switchToPreviousUser()
+/// 
+/// 4. XÓA TẤT CẢ TÀI KHOẢN (reset):
+///    - await UserStorageService.clearAllUserData()
+/// 
+/// 5. KIỂM TRA TỒN TẠI:
+///    - await UserStorageService.hasUserProfile()
+///    - await UserStorageService.hasPreviousUser()
 
 class WelcomeScreen extends StatefulWidget {
-  const WelcomeScreen({super.key});
+  final bool isFirstTime;
+  
+  const WelcomeScreen({super.key, required this.isFirstTime});
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -15,6 +46,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
+  
+  final TextEditingController _nameController = TextEditingController();
+  UserProfile? _existingProfile;
 
   @override
   void initState() {
@@ -39,19 +73,114 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     );
 
     _controller.forward();
+    _loadExistingProfile();
+  }
+  
+  Future<void> _loadExistingProfile() async {
+    if (!widget.isFirstTime) {
+      // Load người đang dùng hiện tại
+      final profile = await UserStorageService.getCurrentUser();
+      
+      // DEBUG: Uncomment để xem thông tin người cũ
+      // final previousProfile = await UserStorageService.getPreviousUser();
+      // print('Current User: ${profile?.name}');
+      // print('Previous User: ${previousProfile?.name}');
+      
+      if (mounted) {
+        setState(() {
+          _existingProfile = profile;
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
-  void _navigateToHome() {
+  Future<void> _continueAsExistingUser() async {
+    if (_existingProfile != null) {
+      // Lưu lại thông tin và chuyển sang HomeScreen
+      await UserStorageService.markAsReturningUser();
+      await UserStorageService.saveCurrentUser(_existingProfile!);
+      
+      if (mounted) {
+        context.read<UserProvider>().updateProfile(_existingProfile!);
+        _navigateToHome();
+      }
+    }
+  }
+  
+  void _showNewProfileInput() {
+    // Navigate to onboarding flow for new users
+    _startOnboardingFlow();
+  }
+  
+  Future<void> _startOnboardingFlow() async {
+    // Step 1: Get user profile info
+    final profile = await Navigator.push<UserProfile>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const OnboardingProfileScreen(),
+      ),
+    );
+    
+    if (profile == null) return; // User cancelled
+    
+    // Step 2: Get current habits (REQUIRED - không thể bỏ qua)
+    if (!mounted) return;
+    final currentHabits = await Navigator.push<List<Map<String, String>>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CurrentHabitsInputScreen(),
+      ),
+    );
+    
+    if (currentHabits == null || currentHabits.isEmpty) {
+      // User cancelled or didn't input any habits - show error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bạn cần nhập ít nhất 1 thói quen để tiếp tục'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+    
+    // Step 3: Show analysis result and suggestions
+    if (!mounted) return;
+    final selectedHabits = await Navigator.push<List<Habit>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HabitAnalysisResultScreen(currentHabits: currentHabits),
+      ),
+    );
+    
+    // Save profile and continue to home with habits
+    await _saveProfileAndContinue(profile, selectedHabits ?? []);
+  }
+  
+  Future<void> _saveProfileAndContinue(UserProfile profile, List<Habit> habits) async {
+    // Save profile
+    await UserStorageService.markAsReturningUser();
+    await UserStorageService.saveCurrentUser(profile);
+    
+    if (mounted) {
+      context.read<UserProvider>().updateProfile(profile);
+      _navigateToHome(initialHabits: habits);
+    }
+  }
+
+  void _navigateToHome({List<Habit>? initialHabits}) {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const HomeScreen(),
+            HomeScreen(initialHabits: initialHabits),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
@@ -116,11 +245,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 
                 const SizedBox(height: AppDimensions.paddingXLarge),
                 
-                // App name with fade animation
+                // App name or Welcome back message
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Text(
-                    AppLocalizations.of(context)!.appTitle,
+                    widget.isFirstTime 
+                        ? AppLocalizations.of(context)!.appTitle
+                        : AppLocalizations.of(context)!.welcomeBack,
                     style: Theme.of(context).textTheme.headlineLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -140,36 +271,170 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 
                 const Spacer(),
                 
-                // Get Started button with fade animation
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _navigateToHome,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppDimensions.radiusMedium),
-                        ),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context)!.getStarted,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.white,
-                            ),
-                      ),
-                    ),
-                  ),
-                ),
+                // Nội dung khác nhau cho người dùng mới vs cũ
+                if (widget.isFirstTime)
+                  _buildFirstTimeWelcome(isDarkMode)
+                else
+                  _buildReturningUserContent(isDarkMode),
                 
                 const SizedBox(height: AppDimensions.paddingLarge),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+  
+  // Nội dung cho người dùng lần đầu
+  Widget _buildFirstTimeWelcome(bool isDarkMode) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Column(
+        children: [
+          // Welcome message
+          Container(
+            padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+            decoration: BoxDecoration(
+              color: isDarkMode ? AppColors.darkCard : Colors.white,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              boxShadow: AppShadows.medium,
+            ),
+            child: Column(
+              children: [
+                const Text('🎉', style: TextStyle(fontSize: 48)),
+                const SizedBox(height: AppDimensions.paddingMedium),
+                Text(
+                  'Chào mừng bạn đến với Habit Tracker!',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppDimensions.paddingSmall),
+                Text(
+                  'Bắt đầu xây dựng thói quen tốt ngay hôm nay',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: isDarkMode ? Colors.white70 : AppColors.textSecondary,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: AppDimensions.paddingMedium),
+          
+          // Start button
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: _startOnboardingFlow,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                ),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.letsStart,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // Nội dung cho người dùng đã từng dùng
+  Widget _buildReturningUserContent(bool isDarkMode) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Column(
+        children: [
+          // Hiển thị thông tin người dùng
+          if (_existingProfile != null) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDarkMode ? AppColors.darkCard : Colors.white,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                boxShadow: AppShadows.medium,
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                    child: Text(
+                      _existingProfile!.name[0].toUpperCase(),
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            color: AppColors.primary,
+                          ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _existingProfile!.name,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        Text(
+                          _existingProfile!.bio,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: AppDimensions.paddingMedium),
+            
+            // Nút "Tiếp tục"
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _continueAsExistingUser,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                  ),
+                ),
+                child: Text(
+                  AppLocalizations.of(context)!.continueAsUser(_existingProfile!.name),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                      ),
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: AppDimensions.paddingSmall),
+            
+            // Nút "Tạo hồ sơ mới"
+            TextButton(
+              onPressed: _showNewProfileInput,
+              child: Text(
+                AppLocalizations.of(context)!.createNewProfile,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.primary,
+                    ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

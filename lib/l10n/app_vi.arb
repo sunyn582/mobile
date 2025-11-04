@@ -111,5 +111,11 @@
   "currentHealthStatus": "Tình Trạng Sức Khỏe Hiện Tại",
   "healthStatusHint": "VD: Tốt, Đang hồi phục, Đang điều trị...",
   "healthInformation": "Thông Tin Sức Khỏe",
-  "bmi": "Chỉ số BMI"
+  "bmi": "Chỉ số BMI",
+  "welcomeBack": "Chào Mừng Trở Lại!",
+  "continueAsUser": "Tiếp tục với tài khoản {name}",
+  "createNewProfile": "Tạo Hồ Sơ Mới",
+  "enterYourName": "Nhập tên của bạn",
+  "yourNameHint": "VD: Nguyễn Văn A",
+  "letsStart": "Bắt Đầu Thôi!"
 }

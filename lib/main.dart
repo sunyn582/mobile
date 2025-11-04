@@ -6,9 +6,13 @@ import 'constants/app_theme.dart';
 import 'utils/theme_provider.dart';
 import 'utils/language_provider.dart';
 import 'utils/user_provider.dart';
+import 'utils/user_storage_service.dart';
 import 'screens/welcome_screen.dart';
+import 'screens/theme_loading_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   runApp(
     MultiProvider(
       providers: [
@@ -21,8 +25,43 @@ void main() {
   );
 }
 
-class HabitTrackerApp extends StatelessWidget {
+class HabitTrackerApp extends StatefulWidget {
   const HabitTrackerApp({super.key});
+
+  @override
+  State<HabitTrackerApp> createState() => _HabitTrackerAppState();
+}
+
+class _HabitTrackerAppState extends State<HabitTrackerApp> {
+  bool _isLoading = true;
+  bool _isFirstTime = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFirstTimeUser();
+  }
+
+  Future<void> _checkFirstTimeUser() async {
+    // Kiểm tra xem đây có phải lần đầu người dùng mở app không
+    final isFirst = await UserStorageService.isFirstTimeUser();
+    
+    // Nếu không phải lần đầu, load thông tin người dùng đã lưu
+    if (!isFirst) {
+      final userProfile = await UserStorageService.getCurrentUser();
+      if (userProfile != null && mounted) {
+        // Load thông tin vào UserProvider
+        context.read<UserProvider>().updateProfile(userProfile);
+      }
+    }
+    
+    if (mounted) {
+      setState(() {
+        _isFirstTime = isFirst;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +84,18 @@ class HabitTrackerApp extends StatelessWidget {
             Locale('en'),
             Locale('vi'),
           ],
-          home: const WelcomeScreen(),
+          home: _isLoading
+              ? ThemeLoadingScreen(
+                  isDarkMode: themeProvider.themeMode == ThemeMode.dark,
+                  onComplete: () {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  },
+                ) // Màn hình loading
+              : _isFirstTime
+                  ? const WelcomeScreen(isFirstTime: true) // Người dùng mới
+                  : const WelcomeScreen(isFirstTime: false), // Người dùng cũ
         );
       },
     );

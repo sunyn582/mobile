@@ -1,3 +1,6 @@
+import 'habit_contribution_service.dart';
+import 'habit_auto_classifier.dart';
+
 class HabitClassifier {
   // Danh sách thói quen tốt (Good Habits) - Song ngữ Việt/English
   static const List<Map<String, dynamic>> goodHabits = [
@@ -122,7 +125,34 @@ class HabitClassifier {
     {'vi': 'xem phim nhiều', 'en': 'binge watching', 'category': 'Custom'},
   ];
 
-  /// Phân loại thói quen dựa trên tên
+  /// Phân loại thói quen dựa trên tên (async version with user contributions and online search)
+  /// Trả về: 'good', 'bad', hoặc 'uncertain'
+  static Future<String> classifyHabitAsync(String habitName) async {
+    final name = habitName.toLowerCase().trim();
+    
+    // 1. Check user contributions first (highest priority)
+    final userClassification = await HabitContributionService.getHabitClassification(name);
+    if (userClassification != null) {
+      return userClassification;
+    }
+    
+    // 2. Check built-in database
+    final builtInClassification = classifyHabit(habitName);
+    if (builtInClassification != 'uncertain') {
+      return builtInClassification;
+    }
+    
+    // 3. Try online classification (lowest priority, fallback for unknown habits)
+    try {
+      final onlineClassification = await HabitAutoClassifier.classifyHabitOnline(habitName);
+      return onlineClassification;
+    } catch (e) {
+      // If online fails, return uncertain
+      return 'uncertain';
+    }
+  }
+  
+  /// Phân loại thói quen dựa trên tên (sync version)
   /// Trả về: 'good', 'bad', hoặc 'uncertain'
   static String classifyHabit(String habitName) {
     final name = habitName.toLowerCase().trim();

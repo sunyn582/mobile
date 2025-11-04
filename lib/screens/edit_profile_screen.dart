@@ -121,7 +121,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _saveProfile() async {
     if (_formKey.currentState!.validate()) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      await userProvider.updateProfile(
+      await userProvider.updateProfileFields(
         name: _nameController.text.trim(),
         bio: _bioController.text.trim(),
         email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),

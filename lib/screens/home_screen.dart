@@ -10,77 +10,91 @@ import 'profile_screen.dart';
 import 'bad_habits_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final List<Habit>? initialHabits;
+  
+  const HomeScreen({super.key, this.initialHabits});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Habit> habits = [
-    Habit(
-      id: '1',
-      name: 'Morning Meditation',
-      icon: '🧘',
-      category: 'Mind',
-      color: '#6FCF97',
-      targetMinutes: 15,
-      habitType: 'good',
-      completedDates: {
-        '2025-10-28': true,
-        '2025-10-29': true,
-        '2025-10-30': true,
-      },
-    ),
-    Habit(
-      id: '2',
-      name: 'Read Books',
-      icon: '📚',
-      category: 'Study',
-      color: '#2F80ED',
-      targetMinutes: 30,
-      habitType: 'good',
-      completedDates: {
-        '2025-10-28': true,
-        '2025-10-29': false,
-        '2025-10-30': true,
-      },
-    ),
-    Habit(
-      id: '3',
-      name: 'Drink Water',
-      icon: '💧',
-      category: 'Health',
-      color: '#56CCF2',
-      targetMinutes: 5,
-      habitType: 'good',
-      completedDates: {
-        '2025-10-30': true,
-      },
-    ),
-    Habit(
-      id: '4',
-      name: 'Smoking',
-      icon: '🚬',
-      category: 'Health',
-      color: '#EB5757',
-      targetMinutes: 0,
-      habitType: 'bad',
-      completedDates: {},
-      description: 'Hút thuốc gây hại nghiêm trọng cho sức khỏe, ảnh hưởng đến phổi, tim mạch và tăng nguy cơ ung thư.',
-    ),
-    Habit(
-      id: '5',
-      name: 'Late Night Social Media',
-      icon: '📱',
-      category: 'Health',
-      color: '#EB5757',
-      targetMinutes: 0,
-      habitType: 'bad',
-      completedDates: {},
-      description: 'Sử dụng điện thoại vào ban đêm làm giảm chất lượng giấc ngủ, ảnh hưởng đến sức khỏe tinh thần và thể chất.',
-    ),
-  ];
+  List<Habit> habits = [];
+  
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with provided habits or default habits
+    if (widget.initialHabits != null && widget.initialHabits!.isNotEmpty) {
+      habits = widget.initialHabits!;
+    } else {
+      // Load default demo habits
+      habits = [
+        Habit(
+          id: '1',
+          name: 'Morning Meditation',
+          icon: '🧘',
+          category: 'Mind',
+          color: '#6FCF97',
+          targetMinutes: 15,
+          habitType: 'good',
+          completedDates: {
+            '2025-10-28': true,
+            '2025-10-29': true,
+            '2025-10-30': true,
+          },
+        ),
+        Habit(
+          id: '2',
+          name: 'Read Books',
+          icon: '📚',
+          category: 'Study',
+          color: '#2F80ED',
+          targetMinutes: 30,
+          habitType: 'good',
+          completedDates: {
+            '2025-10-28': true,
+            '2025-10-29': false,
+            '2025-10-30': true,
+          },
+        ),
+        Habit(
+          id: '3',
+          name: 'Drink Water',
+          icon: '💧',
+          category: 'Health',
+          color: '#56CCF2',
+          targetMinutes: 5,
+          habitType: 'good',
+          completedDates: {
+            '2025-10-30': true,
+          },
+        ),
+        Habit(
+          id: '4',
+          name: 'Smoking',
+          icon: '🚬',
+          category: 'Health',
+          color: '#EB5757',
+          targetMinutes: 0,
+          habitType: 'bad',
+          completedDates: {},
+          description: 'Hút thuốc gây hại nghiêm trọng cho sức khỏe, ảnh hưởng đến phổi, tim mạch và tăng nguy cơ ung thư.',
+        ),
+        Habit(
+          id: '5',
+          name: 'Late Night Social Media',
+          icon: '📱',
+          category: 'Health',
+          color: '#EB5757',
+          targetMinutes: 0,
+          habitType: 'bad',
+          completedDates: {},
+          description: 'Sử dụng điện thoại vào ban đêm làm giảm chất lượng giấc ngủ, ảnh hưởng đến sức khỏe tinh thần và thể chất.',
+        ),
+      ];
+    }
+  }
 
   String _getGreeting(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;

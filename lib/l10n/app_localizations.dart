@@ -763,6 +763,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'BMI'**
   String get bmi;
+
+  /// Welcome back message for returning users
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back!'**
+  String get welcomeBack;
+
+  /// Continue as existing user
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as {name}'**
+  String continueAsUser(String name);
+
+  /// Create new profile button
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Profile'**
+  String get createNewProfile;
+
+  /// Enter name prompt
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your name'**
+  String get enterYourName;
+
+  /// Name input hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., John Doe'**
+  String get yourNameHint;
+
+  /// Let's start button for new users
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s Start!'**
+  String get letsStart;
 }
 
 class _AppLocalizationsDelegate

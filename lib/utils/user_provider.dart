@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/user_profile.dart';
+import 'user_storage_service.dart';
 
 class UserProvider extends ChangeNotifier {
   UserProfile _userProfile = UserProfile.defaultProfile();
@@ -19,12 +18,10 @@ class UserProvider extends ChangeNotifier {
   // Load user profile from SharedPreferences
   Future<void> _loadUserProfile() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final profileJson = prefs.getString('user_profile');
+      final profile = await UserStorageService.getCurrentUser();
       
-      if (profileJson != null) {
-        final Map<String, dynamic> profileMap = jsonDecode(profileJson);
-        _userProfile = UserProfile.fromJson(profileMap);
+      if (profile != null) {
+        _userProfile = profile;
         notifyListeners();
       }
     } catch (e) {
@@ -35,16 +32,21 @@ class UserProvider extends ChangeNotifier {
   // Save user profile to SharedPreferences
   Future<void> _saveUserProfile() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final profileJson = jsonEncode(_userProfile.toJson());
-      await prefs.setString('user_profile', profileJson);
+      await UserStorageService.saveCurrentUser(_userProfile);
     } catch (e) {
       debugPrint('Error saving user profile: $e');
     }
   }
+  
+  // Update profile directly with UserProfile object
+  Future<void> updateProfile(UserProfile profile) async {
+    _userProfile = profile;
+    await _saveUserProfile();
+    notifyListeners();
+  }
 
-  // Update user profile
-  Future<void> updateProfile({
+  // Update user profile fields
+  Future<void> updateProfileFields({
     String? name,
     String? bio,
     String? email,

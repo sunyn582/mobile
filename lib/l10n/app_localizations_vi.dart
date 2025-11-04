@@ -353,4 +353,24 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get bmi => 'Chỉ số BMI';
+
+  @override
+  String get welcomeBack => 'Chào Mừng Trở Lại!';
+
+  @override
+  String continueAsUser(String name) {
+    return 'Tiếp tục với tài khoản $name';
+  }
+
+  @override
+  String get createNewProfile => 'Tạo Hồ Sơ Mới';
+
+  @override
+  String get enterYourName => 'Nhập tên của bạn';
+
+  @override
+  String get yourNameHint => 'VD: Nguyễn Văn A';
+
+  @override
+  String get letsStart => 'Bắt Đầu Thôi!';
 }

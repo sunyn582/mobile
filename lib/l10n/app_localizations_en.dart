@@ -354,4 +354,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bmi => 'BMI';
+
+  @override
+  String get welcomeBack => 'Welcome Back!';
+
+  @override
+  String continueAsUser(String name) {
+    return 'Continue as $name';
+  }
+
+  @override
+  String get createNewProfile => 'Create New Profile';
+
+  @override
+  String get enterYourName => 'Enter your name';
+
+  @override
+  String get yourNameHint => 'e.g., John Doe';
+
+  @override
+  String get letsStart => 'Let\'s Start!';
 }

@@ -552,5 +552,40 @@
   "bmi": "BMI",
   "@bmi": {
     "description": "BMI label"
+  },
+  
+  "welcomeBack": "Welcome Back!",
+  "@welcomeBack": {
+    "description": "Welcome back message for returning users"
+  },
+  
+  "continueAsUser": "Continue as {name}",
+  "@continueAsUser": {
+    "description": "Continue as existing user",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "createNewProfile": "Create New Profile",
+  "@createNewProfile": {
+    "description": "Create new profile button"
+  },
+  
+  "enterYourName": "Enter your name",
+  "@enterYourName": {
+    "description": "Enter name prompt"
+  },
+  
+  "yourNameHint": "e.g., John Doe",
+  "@yourNameHint": {
+    "description": "Name input hint"
+  },
+  
+  "letsStart": "Let's Start!",
+  "@letsStart": {
+    "description": "Let's start button for new users"
   }
 }
