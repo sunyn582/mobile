@@ -56,7 +56,7 @@ class _CurrentHabitsInputScreenState extends State<CurrentHabitsInputScreen> {
       return;
     }
 
-    // Show loading dialog và phân loại tất cả thói quen
+    // Show loading dialog và phân loại tất cả thói quen tự động
     if (!mounted) return;
     
     final results = await showDialog<List<Map<String, String>>>(
@@ -151,7 +151,7 @@ class _CurrentHabitsInputScreenState extends State<CurrentHabitsInputScreen> {
 
               // Info box
               Padding(
-                padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+                padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingLarge),
                 child: Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingMedium),
                   decoration: BoxDecoration(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../constants/app_constants.dart';
 import '../models/habit.dart';
 import '../utils/habit_contribution_service.dart';
+import '../utils/habit_classifier.dart';
+import '../utils/habit_auto_classifier.dart';
 import 'suggested_habits_screen.dart';
 
 class HabitAnalysisResultScreen extends StatefulWidget {
@@ -80,9 +82,8 @@ class _HabitAnalysisResultScreenState extends State<HabitAnalysisResultScreen> {
       // Add suggested habits
       allHabits.addAll(suggestedHabits);
       
-      if (mounted) {
-        Navigator.pop(context, allHabits);
-      }
+      if (!context.mounted) return;
+      Navigator.pop(context, allHabits);
     }
   }
 
@@ -113,38 +114,99 @@ class _HabitAnalysisResultScreenState extends State<HabitAnalysisResultScreen> {
   }
   
   Future<void> _classifyUncertainHabit(int index, String habitName) async {
-    final result = await showDialog<String>(
+    final userOpinion = await showDialog<String>(
       context: context,
       builder: (context) => _ClassifyHabitDialog(habitName: habitName),
     );
     
-    if (result != null) {
-      setState(() {
-        _userClassifications[index] = result;
-      });
-      
-      // Show thank you message
+    if (userOpinion != null) {
+      // Show thank you and verification message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Cảm ơn bạn đã giúp phân loại! 🙏'),
-            backgroundColor: const Color(0xFF6FCF97),
-            duration: const Duration(seconds: 2),
+          const SnackBar(
+            content: Text('Cảm ơn! Chúng tôi sẽ kiểm tra lại ý kiến của bạn 🙏'),
+            backgroundColor: Color(0xFF6FCF97),
+            duration: Duration(seconds: 3),
           ),
         );
       }
       
-      // TODO: Save to database/HabitClassifier
-      _saveHabitClassification(habitName, result);
+      // Save user opinion (not classification yet)
+      await _saveUserOpinion(habitName, userOpinion);
+      
+      // Verify the user's opinion
+      final verifiedType = await _verifyHabitClassification(habitName, userOpinion);
+      
+      // Only update if verification succeeds
+      if (verifiedType != null && mounted) {
+        setState(() {
+          _userClassifications[index] = verifiedType;
+        });
+        
+        // Show verification result
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              verifiedType == userOpinion 
+                ? 'Xác nhận: "$habitName" là ${verifiedType == "good" ? "thói quen tốt" : "thói quen xấu"} ✅'
+                : 'Đã kiểm tra lại phân loại cho "$habitName"',
+            ),
+            backgroundColor: const Color(0xFF6FCF97),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else if (mounted) {
+        // If verification fails, keep as uncertain
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Chưa thể xác minh. Thói quen vẫn ở trạng thái phân vân'),
+            backgroundColor: Color(0xFFF2C94C),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
   
-  Future<void> _saveHabitClassification(String habitName, String type) async {
-    // Save to local storage
-    await HabitContributionService.saveHabitClassification(habitName, type);
-    
-    // TODO: In the future, we can also send this to a backend API
-    // to contribute to a global database of habit classifications
+  Future<void> _saveUserOpinion(String habitName, String userOpinion) async {
+    // Save user's opinion to local storage for future reference
+    // This is NOT the final classification, just the user's input
+    await HabitContributionService.saveUserOpinion(habitName, userOpinion);
+  }
+  
+  Future<String?> _verifyHabitClassification(String habitName, String userOpinion) async {
+    // Step 1: Try to verify using online classification
+    try {
+      final onlineClassification = await HabitAutoClassifier.classifyHabitOnline(habitName);
+      
+      // If online classification matches user opinion, accept it
+      if (onlineClassification == userOpinion) {
+        // Save as verified classification
+        await HabitContributionService.saveHabitClassification(habitName, onlineClassification);
+        return onlineClassification;
+      }
+      
+      // If online classification is certain (not uncertain), use it instead
+      if (onlineClassification != 'uncertain') {
+        await HabitContributionService.saveHabitClassification(habitName, onlineClassification);
+        return onlineClassification;
+      }
+      
+      // If online is also uncertain, check with built-in database
+      final builtInClassification = HabitClassifier.classifyHabit(habitName);
+      if (builtInClassification != 'uncertain') {
+        await HabitContributionService.saveHabitClassification(habitName, builtInClassification);
+        return builtInClassification;
+      }
+      
+      // If still uncertain but user has strong opinion, we can accept after multiple confirmations
+      // For now, keep as uncertain
+      return null;
+      
+    } catch (e) {
+      // If verification fails, return null to keep as uncertain
+      return null;
+    }
   }
 
   String _getIconForHabit(String type) {
@@ -298,13 +360,26 @@ class _HabitAnalysisResultScreenState extends State<HabitAnalysisResultScreen> {
                               ),
                               const SizedBox(width: AppDimensions.paddingSmall),
                               Expanded(
-                                child: Text(
-                                  'Bạn có thể giúp phân loại $_uncertainHabitsCount thói quen để chúng tôi hiểu rõ hơn!',
-                                  style: const TextStyle(
-                                    color: Color(0xFFF2C94C),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Thói quen đang ở trạng thái phân vân',
+                                      style: TextStyle(
+                                        color: Color(0xFFF2C94C),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Bạn có thể giúp phân loại $_uncertainHabitsCount thói quen hoặc để chúng tôi tìm hiểu thêm về bạn!',
+                                      style: TextStyle(
+                                        color: const Color(0xFFF2C94C).withValues(alpha: 0.8),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -613,7 +688,7 @@ class _ClassifyHabitDialog extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppDimensions.paddingLarge),
+            const SizedBox(height: AppDimensions.paddingSmall),
             Row(
               children: [
                 Expanded(
@@ -683,9 +758,10 @@ class _ClassifyHabitDialog extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'Bỏ qua',
+                'Để sau, tôi vẫn đang phân vân',
                 style: TextStyle(
                   color: isDarkMode ? Colors.white70 : AppColors.textSecondary,
+                  fontSize: 13,
                 ),
               ),
             ),

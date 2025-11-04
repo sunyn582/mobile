@@ -5,6 +5,36 @@ import 'dart:convert';
 class HabitContributionService {
   static const String _keyGoodHabits = 'user_contributed_good_habits';
   static const String _keyBadHabits = 'user_contributed_bad_habits';
+  static const String _keyUserOpinions = 'user_opinions'; // Stores user opinions (not verified yet)
+
+  /// Save user's opinion (not verified classification yet)
+  static Future<void> saveUserOpinion(String habitName, String opinion) async {
+    final prefs = await SharedPreferences.getInstance();
+    final opinions = await _getUserOpinions();
+    
+    // Store as map: habitName -> {opinion, timestamp, verified}
+    opinions[habitName.toLowerCase().trim()] = {
+      'opinion': opinion,
+      'timestamp': DateTime.now().toIso8601String(),
+      'verified': false,
+    };
+    
+    await prefs.setString(_keyUserOpinions, jsonEncode(opinions));
+  }
+
+  /// Get all user opinions
+  static Future<Map<String, dynamic>> _getUserOpinions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_keyUserOpinions);
+    if (jsonString == null) return {};
+    
+    try {
+      final Map<String, dynamic> decoded = jsonDecode(jsonString);
+      return decoded;
+    } catch (e) {
+      return {};
+    }
+  }
 
   /// Save a user-classified habit
   static Future<void> saveHabitClassification(String habitName, String type) async {
@@ -51,6 +81,7 @@ class HabitContributionService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyGoodHabits);
     await prefs.remove(_keyBadHabits);
+    await prefs.remove(_keyUserOpinions);
   }
 
   // Helper methods
