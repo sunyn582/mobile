@@ -7,11 +7,13 @@ import '../constants/app_constants.dart';
 import '../utils/theme_provider.dart';
 import '../utils/language_provider.dart';
 import '../utils/user_provider.dart';
+import '../utils/health_assessment_service.dart';
 import '../models/habit.dart';
 import 'theme_loading_screen.dart';
 import 'edit_profile_screen.dart';
 import 'group_info_screen.dart';
 import 'suggested_habits_screen.dart';
+import 'health_recommendations_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final List<Habit> habits;
@@ -134,161 +136,130 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Build habits section with 3 columns
-  Widget _buildHabitsSection(bool isDarkMode) {
-    final goodHabits = _getHabitsByType('good');
-    final badHabits = _getHabitsByType('bad');
-    final uncertainHabits = _getHabitsByType('uncertain');
+  // Build health alert banner
+  Widget? _buildHealthAlertBanner(bool isDarkMode, UserProvider userProvider) {
+    final assessment = HealthAssessmentService.assessHealth(userProvider.userProfile);
+    
+    // Only show if needs attention
+    if (!assessment.needsAttention()) {
+      return null;
+    }
+
+    final severityColor = Color(
+      int.parse(assessment.getSeverityColor().substring(1), radix: 16) + 0xFF000000,
+    );
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Thói quen',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: AppDimensions.paddingSmall),
-        Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingMedium),
-          decoration: BoxDecoration(
-            color: isDarkMode ? AppColors.darkCard : Colors.white,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-            boxShadow: AppShadows.small,
-          ),
-          child: Column(
-            children: [
-              // Column headers
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildColumnHeader('Thói quen tốt', Colors.green, goodHabits.length),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildColumnHeader('Thói quen xấu', Colors.red, badHabits.length),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildColumnHeader('Phân vân', Colors.orange, uncertainHabits.length),
-                  ),
-                ],
+        GestureDetector(
+          onTap: () async {
+            final result = await Navigator.push<List<Habit>>(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HealthRecommendationsScreen(
+                  assessment: assessment,
+                ),
               ),
-              const SizedBox(height: 12),
-              // Habit items in 3 columns
-              SizedBox(
-                height: 200,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            );
+
+            if (result != null && result.isNotEmpty && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã thêm ${result.length} thói quen mới!'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingMedium,
+            ),
+            padding: const EdgeInsets.all(AppDimensions.paddingMedium),
+            decoration: BoxDecoration(
+              color: severityColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              border: Border.all(color: severityColor.withValues(alpha: 0.3), width: 2),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Expanded(
-                      child: _buildHabitColumn(goodHabits, 'Chưa có thói quen tốt'),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: severityColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        assessment.getSeverityIcon(),
+                        style: const TextStyle(fontSize: 24),
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     Expanded(
-                      child: _buildHabitColumn(badHabits, 'Chưa có thói quen xấu'),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Đánh giá sức khỏe',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: severityColor,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            assessment.message,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildHabitColumn(uncertainHabits, 'Chưa có thói quen phân vân'),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: AppColors.primary,
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildColumnHeader(String title, Color color, int count) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Flexible(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: color,
-                fontSize: 12,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              '$count',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHabitColumn(List<Habit> habits, String emptyMessage) {
-    if (habits.isEmpty) {
-      return Center(
-        child: Text(
-          emptyMessage,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 11,
-          ),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: habits.length,
-      itemBuilder: (context, index) {
-        final habit = habits[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 6),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Color(int.parse(habit.color.substring(1), radix: 16) + 0xFF000000)
-                .withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: Color(int.parse(habit.color.substring(1), radix: 16) + 0xFF000000)
-                  .withValues(alpha: 0.3),
-            ),
-          ),
-          child: Row(
-            children: [
-              Text(habit.icon, style: const TextStyle(fontSize: 16)),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  habit.name,
-                  style: const TextStyle(fontSize: 11),
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.healing,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Xem gợi ý thói quen để cải thiện sức khỏe',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      },
+        ),
+        const SizedBox(height: AppDimensions.paddingLarge),
+      ],
     );
   }
 
@@ -436,6 +407,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: AppDimensions.paddingLarge),
 
+            // Health Alert Banner (if needs attention)
+            if (_buildHealthAlertBanner(isDarkMode, userProvider) != null)
+              _buildHealthAlertBanner(isDarkMode, userProvider)!,
+
             // User Information Section
             Text(
               l10n.personalInformation,
@@ -546,12 +521,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
 
-              const SizedBox(height: AppDimensions.paddingLarge),
-            ],
-
-            // Habits Section
-            if (widget.habits.isNotEmpty) ...[
-              _buildHabitsSection(isDarkMode),
               const SizedBox(height: AppDimensions.paddingLarge),
             ],
 
