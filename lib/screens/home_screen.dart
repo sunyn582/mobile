@@ -169,13 +169,38 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _navigateToProfile() {
-    Navigator.push(
+  void _navigateToProfile() async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ProfileScreen(habits: habits),
       ),
     );
+    
+    // If result contains new habits, update the habits list
+    if (result != null && result is List<Habit>) {
+      setState(() {
+        // Add new habits to the existing list
+        for (var newHabit in result) {
+          // Check if habit doesn't already exist
+          if (!habits.any((h) => h.id == newHabit.id)) {
+            habits.add(newHabit);
+          }
+        }
+      });
+      
+      // Show success snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Đã cập nhật ${result.length} thói quen mới!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   // Get habits by type

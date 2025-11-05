@@ -67,44 +67,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Handle reclassify habits based on new profile
   Future<void> _handleReclassifyHabits() async {
-    // Show loading dialog
-    showDialog(
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    // Show loading screen with 3 second animation
+    await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Center(
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark 
-                  ? AppColors.darkCard 
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Đang phân tích thói quen...',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-            ),
-          ),
+      barrierColor: Colors.black87,
+      builder: (BuildContext dialogContext) {
+        return ThemeLoadingScreen(
+          isDarkMode: isDarkMode,
+          loadingText: 'Đang phân tích và thiết lập thói quen mới...',
+          duration: const Duration(seconds: 3),
+          onComplete: () {
+            Navigator.of(dialogContext).pop();
+          },
         );
       },
     );
 
-    // Simulate analysis delay
-    await Future.delayed(const Duration(seconds: 1));
-
     if (!mounted) return;
-    
-    Navigator.pop(context); // Close loading dialog
     
     // Navigate to suggested habits screen
     final result = await Navigator.push(
@@ -116,23 +98,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     
     if (!mounted) return;
     
-    if (result != null) {
+    if (result != null && result is List<Habit>) {
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Thói quen đã được cập nhật thành công!'),
-          backgroundColor: AppColors.primary,
+          content: Text('✅ Đã thêm ${result.length} thói quen mới!'),
+          backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            label: 'OK',
-            textColor: Colors.white,
-            onPressed: () {},
-          ),
+          duration: const Duration(seconds: 2),
         ),
       );
       
-      // Return to home screen or refresh
-      Navigator.pop(context);
+      // Return to home screen with new habits
+      Navigator.pop(context, result);
     }
   }
 

@@ -4,11 +4,15 @@ import '../constants/app_constants.dart';
 class ThemeLoadingScreen extends StatefulWidget {
   final bool isDarkMode;
   final VoidCallback onComplete;
+  final String? loadingText;
+  final Duration? duration;
 
   const ThemeLoadingScreen({
     super.key,
     required this.isDarkMode,
     required this.onComplete,
+    this.loadingText,
+    this.duration,
   });
 
   @override
@@ -25,8 +29,10 @@ class _ThemeLoadingScreenState extends State<ThemeLoadingScreen>
   void initState() {
     super.initState();
     
+    final animationDuration = widget.duration ?? const Duration(milliseconds: 2000);
+    
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: animationDuration,
       vsync: this,
     );
 
@@ -46,8 +52,9 @@ class _ThemeLoadingScreenState extends State<ThemeLoadingScreen>
 
     _controller.forward();
 
-    // Wait 3 seconds then complete
-    Future.delayed(const Duration(seconds: 3), () {
+    // Wait for specified duration then complete
+    final completeDuration = widget.duration ?? const Duration(seconds: 3);
+    Future.delayed(completeDuration, () {
       if (mounted) {
         widget.onComplete();
       }
@@ -135,14 +142,16 @@ class _ThemeLoadingScreenState extends State<ThemeLoadingScreen>
                 
                 // Loading text
                 Text(
-                  widget.isDarkMode 
+                  widget.loadingText ?? 
+                  (widget.isDarkMode 
                       ? 'Switching to Dark Mode...' 
-                      : 'Switching to Light Mode...',
+                      : 'Switching to Light Mode...'),
                   style: TextStyle(
                     fontSize: 16,
                     color: textColor.withValues(alpha: 0.7),
                     fontWeight: FontWeight.w500,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),
