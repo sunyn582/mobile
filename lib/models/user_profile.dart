@@ -91,4 +91,72 @@ class UserProfile {
       bio: 'Building great habits every day',
     );
   }
+
+  // Check if there are significant changes that might affect habit recommendations
+  bool hasSignificantChanges(UserProfile other) {
+    // Check name change
+    if (name != other.name) {
+      return true;
+    }
+    
+    // Check date of birth change (age affects habits)
+    if ((dateOfBirth != null && other.dateOfBirth != null) &&
+        dateOfBirth != other.dateOfBirth) {
+      return true;
+    }
+    if ((dateOfBirth == null) != (other.dateOfBirth == null)) {
+      return true;
+    }
+    
+    // Check height change
+    if ((height != null && other.height != null) &&
+        (height! - other.height!).abs() > 5) {
+      return true; // More than 5cm difference
+    }
+    if ((height == null) != (other.height == null)) {
+      return true;
+    }
+    
+    // Check weight change
+    if ((weight != null && other.weight != null) &&
+        (weight! - other.weight!).abs() > 3) {
+      return true; // More than 3kg difference
+    }
+    if ((weight == null) != (other.weight == null)) {
+      return true;
+    }
+    
+    // Check medical history change
+    if ((medicalHistory ?? '') != (other.medicalHistory ?? '')) {
+      return true;
+    }
+    
+    // Check current health status change
+    if ((currentHealthStatus ?? '') != (other.currentHealthStatus ?? '')) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  // Get age from date of birth
+  int? getAge() {
+    if (dateOfBirth == null) return null;
+    final now = DateTime.now();
+    int age = now.year - dateOfBirth!.year;
+    if (now.month < dateOfBirth!.month ||
+        (now.month == dateOfBirth!.month && now.day < dateOfBirth!.day)) {
+      age--;
+    }
+    return age;
+  }
+
+  // Calculate BMI
+  double? getBMI() {
+    if (height != null && weight != null && height! > 0) {
+      final heightInMeters = height! / 100;
+      return weight! / (heightInMeters * heightInMeters);
+    }
+    return null;
+  }
 }

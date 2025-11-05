@@ -11,6 +11,7 @@ import '../models/habit.dart';
 import 'theme_loading_screen.dart';
 import 'edit_profile_screen.dart';
 import 'group_info_screen.dart';
+import 'suggested_habits_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final List<Habit> habits;
@@ -60,6 +61,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Get habits by type
   List<Habit> _getHabitsByType(String type) {
     return widget.habits.where((h) => h.habitType == type).toList();
+  }
+
+  // Handle reclassify habits based on new profile
+  Future<void> _handleReclassifyHabits() async {
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? AppColors.darkCard 
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Đang phân tích thói quen...',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    // Simulate analysis delay
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+    
+    Navigator.pop(context); // Close loading dialog
+    
+    // Navigate to suggested habits screen
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SuggestedHabitsScreen(),
+      ),
+    );
+    
+    if (!mounted) return;
+    
+    if (result != null) {
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Thói quen đã được cập nhật thành công!'),
+          backgroundColor: AppColors.primary,
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'OK',
+            textColor: Colors.white,
+            onPressed: () {},
+          ),
+        ),
+      );
+      
+      // Return to home screen or refresh
+      Navigator.pop(context);
+    }
   }
 
   // Build habits section with 3 columns
@@ -255,16 +327,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Column(
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
+                    GestureDetector(
+                    onTap: () async {
+                      final shouldReclassify = await Navigator.push<bool>(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const EditProfileScreen(),
                         ),
                       );
+                      
+                      if (shouldReclassify == true && mounted) {
+                        await _handleReclassifyHabits();
+                      }
                     },
-                    child: Stack(
+                      child: Stack(
                       children: [
                         Container(
                           width: 100,
@@ -335,13 +411,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: AppDimensions.paddingMedium),
                   OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      final shouldReclassify = await Navigator.push<bool>(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const EditProfileScreen(),
                         ),
                       );
+                      
+                      if (shouldReclassify == true && mounted) {
+                        await _handleReclassifyHabits();
+                      }
                     },
                     icon: const Icon(Icons.edit),
                     label: Text(l10n.editProfile),

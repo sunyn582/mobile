@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../constants/app_constants.dart';
 import '../utils/theme_provider.dart';
 import '../utils/user_provider.dart';
+import '../models/user_profile.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -25,11 +26,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _healthStatusController;
   DateTime? _selectedDateOfBirth;
   final _formKey = GlobalKey<FormState>();
+  late UserProfile _originalProfile; // Store original profile for comparison
 
   @override
   void initState() {
     super.initState();
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    _originalProfile = userProvider.userProfile; // Save original profile
     _nameController = TextEditingController(text: userProvider.userProfile.name);
     _bioController = TextEditingController(text: userProvider.userProfile.bio);
     _emailController = TextEditingController(text: userProvider.userProfile.email ?? '');
@@ -121,7 +124,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _saveProfile() async {
     if (_formKey.currentState!.validate()) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      await userProvider.updateProfileFields(
+      
+      // Create new profile with updated fields
+      final newProfile = _originalProfile.copyWith(
         name: _nameController.text.trim(),
         bio: _bioController.text.trim(),
         email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
@@ -132,10 +137,190 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         weight: _weightController.text.trim().isEmpty ? null : double.tryParse(_weightController.text.trim()),
         currentHealthStatus: _healthStatusController.text.trim().isEmpty ? null : _healthStatusController.text.trim(),
       );
-      if (mounted) {
-        Navigator.pop(context);
+      
+      // Check if there are significant changes
+      final hasSignificantChanges = newProfile.hasSignificantChanges(_originalProfile);
+      
+      // Update the profile
+      await userProvider.updateProfile(newProfile);
+      
+      if (!mounted) return;
+      
+      if (hasSignificantChanges) {
+        // Show dialog to ask if user wants to reclassify habits
+        final shouldReclassify = await _showReclassifyDialog();
+        if (!mounted) return;
+        Navigator.pop(context, shouldReclassify ?? false);
+      } else {
+        Navigator.pop(context, false);
       }
     }
+  }
+
+  Future<bool?> _showReclassifyDialog() async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDarkMode ? AppColors.darkCard : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.refresh,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Cập nhật thói quen?',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Bạn vừa thay đổi thông tin cá nhân quan trọng như:',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 12),
+              _buildChangesList(),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Dựa trên thông tin mới, chúng tôi có thể gợi ý thói quen phù hợp hơn cho bạn.',
+                        style: TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            OutlinedButton(
+              onPressed: () => Navigator.pop(context, false),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: Colors.grey.shade400),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Không, giữ nguyên',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Có, cập nhật thói quen'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildChangesList() {
+    final changes = <String>[];
+    
+    // Create new profile to compare
+    final newProfile = _originalProfile.copyWith(
+      name: _nameController.text.trim(),
+      dateOfBirth: _selectedDateOfBirth,
+      height: _heightController.text.trim().isEmpty ? null : double.tryParse(_heightController.text.trim()),
+      weight: _weightController.text.trim().isEmpty ? null : double.tryParse(_weightController.text.trim()),
+      medicalHistory: _medicalHistoryController.text.trim().isEmpty ? null : _medicalHistoryController.text.trim(),
+      currentHealthStatus: _healthStatusController.text.trim().isEmpty ? null : _healthStatusController.text.trim(),
+    );
+    
+    if (_originalProfile.name != newProfile.name) {
+      changes.add('• Tên: ${_originalProfile.name} → ${newProfile.name}');
+    }
+    
+    if (_originalProfile.dateOfBirth != newProfile.dateOfBirth) {
+      final oldAge = _originalProfile.getAge();
+      final newAge = newProfile.getAge();
+      if (oldAge != null && newAge != null) {
+        changes.add('• Tuổi: $oldAge → $newAge');
+      } else if (newAge != null) {
+        changes.add('• Tuổi: $newAge');
+      }
+    }
+    
+    if (_originalProfile.height != newProfile.height) {
+      if (newProfile.height != null) {
+        changes.add('• Chiều cao: ${newProfile.height!.toStringAsFixed(0)} cm');
+      }
+    }
+    
+    if (_originalProfile.weight != newProfile.weight) {
+      if (newProfile.weight != null) {
+        changes.add('• Cân nặng: ${newProfile.weight!.toStringAsFixed(1)} kg');
+      }
+    }
+    
+    if ((_originalProfile.medicalHistory ?? '') != (newProfile.medicalHistory ?? '')) {
+      changes.add('• Tiền sử bệnh đã thay đổi');
+    }
+    
+    if ((_originalProfile.currentHealthStatus ?? '') != (newProfile.currentHealthStatus ?? '')) {
+      changes.add('• Tình trạng sức khỏe đã thay đổi');
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: changes.map((change) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Text(
+          change,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      )).toList(),
+    );
   }
 
   @override
