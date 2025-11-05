@@ -23,8 +23,8 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
-        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+      builder: (bottomSheetContext) {
+        final isDarkMode = Theme.of(bottomSheetContext).brightness == Brightness.dark;
         
         return Container(
           padding: const EdgeInsets.all(AppDimensions.paddingLarge),
@@ -50,14 +50,14 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
               ),
               Text(
                 'Chọn cách bỏ thói quen',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: Theme.of(bottomSheetContext).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
               const SizedBox(height: 8),
               Text(
                 '${habit.icon} ${habit.name}',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                style: Theme.of(bottomSheetContext).textTheme.bodyLarge?.copyWith(
                       color: Colors.red,
                       fontWeight: FontWeight.w600,
                     ),
@@ -66,15 +66,20 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
               
               // Option 1: Từ từ
               _buildActionOption(
-                context: context,
+                context: bottomSheetContext,
                 icon: Icons.trending_down,
                 iconColor: Colors.blue,
                 title: 'Từ từ',
                 description: 'Giảm dần tần suất, cho phép bạn thích nghi từ từ',
                 gradientColors: [Colors.blue.shade50, Colors.blue.shade100],
                 onTap: () {
-                  Navigator.pop(context);
-                  _handleActionSelected(context, habit, 'gradual');
+                  Navigator.pop(bottomSheetContext);
+                  // Add slight delay for smooth transition
+                  Future.delayed(const Duration(milliseconds: 200), () {
+                    if (context.mounted) {
+                      _handleActionSelected(context, habit, 'gradual');
+                    }
+                  });
                 },
               ),
               
@@ -82,15 +87,20 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
               
               // Option 2: Vừa phải
               _buildActionOption(
-                context: context,
+                context: bottomSheetContext,
                 icon: Icons.speed,
                 iconColor: Colors.orange,
                 title: 'Vừa phải',
                 description: 'Cân bằng giữa quyết tâm và linh hoạt',
                 gradientColors: [Colors.orange.shade50, Colors.orange.shade100],
                 onTap: () {
-                  Navigator.pop(context);
-                  _handleActionSelected(context, habit, 'moderate');
+                  Navigator.pop(bottomSheetContext);
+                  // Add slight delay for smooth transition
+                  Future.delayed(const Duration(milliseconds: 200), () {
+                    if (context.mounted) {
+                      _handleActionSelected(context, habit, 'moderate');
+                    }
+                  });
                 },
               ),
               
@@ -98,15 +108,20 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
               
               // Option 3: Kiên quyết
               _buildActionOption(
-                context: context,
+                context: bottomSheetContext,
                 icon: Icons.block,
                 iconColor: Colors.red,
                 title: 'Kiên quyết',
                 description: 'Dừng ngay lập tức, yêu cầu ý chí mạnh mẽ',
                 gradientColors: [Colors.red.shade50, Colors.red.shade100],
                 onTap: () {
-                  Navigator.pop(context);
-                  _handleActionSelected(context, habit, 'strict');
+                  Navigator.pop(bottomSheetContext);
+                  // Add slight delay for smooth transition
+                  Future.delayed(const Duration(milliseconds: 200), () {
+                    if (context.mounted) {
+                      _handleActionSelected(context, habit, 'strict');
+                    }
+                  });
                 },
               ),
               
@@ -127,61 +142,68 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
     required List<Color> gradientColors,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-      child: Container(
-        padding: const EdgeInsets.all(AppDimensions.paddingMedium),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: gradientColors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+        splashColor: iconColor.withValues(alpha: 0.2),
+        highlightColor: iconColor.withValues(alpha: 0.1),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: gradientColors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+            border: Border.all(color: iconColor.withValues(alpha: 0.3)),
           ),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-          border: Border.all(color: iconColor.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: iconColor.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingMedium),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: iconColor.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Icon(icon, color: iconColor, size: 24),
+                  child: Icon(icon, color: iconColor, size: 24),
+                ),
+                const SizedBox(width: AppDimensions.paddingMedium),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: iconColor,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[700],
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios, size: 16, color: iconColor),
+              ],
             ),
-            const SizedBox(width: AppDimensions.paddingMedium),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: iconColor,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[700],
-                        ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: iconColor),
-          ],
+          ),
         ),
       ),
     );
@@ -214,18 +236,30 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
         break;
     }
     
-    // Show duration picker
+    // Show duration picker with immediate transition
+    if (!mounted) return;
+    
     final selectedDays = await _showDurationPicker(context, actionType, minDays, maxDays);
     if (selectedDays == null || !mounted) return; // User cancelled
+    
+    // Use a short delay to ensure smooth transition between dialogs
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    if (!mounted) return;
 
     final confirmed = await showDialog<bool>(
+      // ignore: use_build_context_synchronously
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         title: Row(
           children: [
             const Icon(Icons.check_circle, color: Colors.green, size: 28),
             const SizedBox(width: 8),
-            const Expanded(child: Text('Kế hoạch đã chọn')),
+            const Expanded(child: Text('Xác nhận kế hoạch')),
           ],
         ),
         content: Column(
@@ -325,13 +359,14 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Hủy'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             child: const Text('Bắt đầu ngay', style: TextStyle(color: Colors.white)),
           ),
@@ -344,90 +379,115 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
     }
   }
 
-  Future<int?> _showDurationPicker(BuildContext context, String actionType, int minDays, int maxDays) async {
+  Future<int?> _showDurationPicker(BuildContext context, String actionType, int minDays, int maxDays) {
     int selectedDays = minDays;
     
     return showDialog<int>(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Chọn thời gian cam kết'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Bạn muốn cam kết trong bao lâu?',
-                  style: TextStyle(color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        '$selectedDays ngày',
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      Text(
-                        '(~${(selectedDays / 30).toStringAsFixed(1)} tháng)',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Slider(
-                  value: selectedDays.toDouble(),
-                  min: minDays.toDouble(),
-                  max: maxDays.toDouble(),
-                  divisions: maxDays - minDays,
-                  label: '$selectedDays ngày',
-                  onChanged: (value) {
-                    setState(() {
-                      selectedDays = value.toInt();
-                    });
-                  },
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return PopScope(
+            canPop: false,
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: const Text('Chọn thời gian cam kết'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '$minDays ngày',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      'Bạn muốn cam kết trong bao lâu?',
+                      style: TextStyle(color: Colors.grey[700]),
+                      textAlign: TextAlign.center,
                     ),
-                    Text(
-                      '$maxDays ngày',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            '$selectedDays ngày',
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          Text(
+                            '(~${(selectedDays / 30).toStringAsFixed(1)} tháng)',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: AppColors.primary,
+                        inactiveTrackColor: AppColors.primary.withValues(alpha: 0.3),
+                        thumbColor: AppColors.primary,
+                        overlayColor: AppColors.primary.withValues(alpha: 0.2),
+                        trackHeight: 4.0,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
+                      ),
+                      child: Slider(
+                        value: selectedDays.toDouble(),
+                        min: minDays.toDouble(),
+                        max: maxDays.toDouble(),
+                        divisions: maxDays - minDays,
+                        label: '$selectedDays ngày',
+                        onChanged: (value) {
+                          setDialogState(() {
+                            selectedDays = value.toInt();
+                          });
+                        },
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '$minDays ngày',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        ),
+                        Text(
+                          '$maxDays ngày',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        ),
+                      ],
                     ),
                   ],
                 ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, null),
+                  child: const Text('Hủy'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(dialogContext, selectedDays),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Tiếp tục', style: TextStyle(color: Colors.white)),
+                ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, null),
-                child: const Text('Hủy'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, selectedDays),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                ),
-                child: const Text('Tiếp tục', style: TextStyle(color: Colors.white)),
-              ),
-            ],
           );
         },
       ),
@@ -448,14 +508,15 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
       targetEndDate: endDate,
     );
 
-    setState(() {
-      _activeChallenges[habit.id] = challenge;
-    });
+    // Update state immediately for better UX
+    if (mounted) {
+      setState(() {
+        _activeChallenges[habit.id] = challenge;
+      });
+    }
 
-    // Schedule notifications
-    try {
-      await BadHabitNotificationService.scheduleNotifications(challenge);
-      
+    // Schedule notifications asynchronously
+    BadHabitNotificationService.scheduleNotifications(challenge).then((_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -465,18 +526,19 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
           ),
         );
       }
-    } catch (e) {
+    }).catchError((error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('⚠️ Không thể lên lịch thông báo. Vui lòng kiểm tra quyền.'),
             backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
           ),
         );
       }
-    }
+    });
 
-    // Navigate to progress screen
+    // Navigate to progress screen immediately
     if (mounted) {
       Navigator.push(
         context,
@@ -484,9 +546,11 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
           builder: (context) => BadHabitProgressScreen(
             challenge: challenge,
             onUpdate: (updatedChallenge) {
-              setState(() {
-                _activeChallenges[habit.id] = updatedChallenge;
-              });
+              if (mounted) {
+                setState(() {
+                  _activeChallenges[habit.id] = updatedChallenge;
+                });
+              }
             },
           ),
         ),
