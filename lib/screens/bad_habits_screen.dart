@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/habit.dart';
+import '../models/bad_habit_challenge.dart';
 import '../constants/app_constants.dart';
+import '../utils/bad_habit_notification_service.dart';
+import 'bad_habit_progress_screen.dart';
 
 class BadHabitsScreen extends StatefulWidget {
   final List<Habit> badHabits;
@@ -12,6 +15,8 @@ class BadHabitsScreen extends StatefulWidget {
 }
 
 class _BadHabitsScreenState extends State<BadHabitsScreen> {
+  final Map<String, BadHabitChallenge> _activeChallenges = {};
+
   void _showActionOptions(BuildContext context, Habit habit) {
     showModalBottomSheet(
       context: context,
@@ -182,26 +187,38 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
     );
   }
 
-  void _handleActionSelected(BuildContext context, Habit habit, String actionType) {
+  void _handleActionSelected(BuildContext context, Habit habit, String actionType) async {
     String message = '';
     String actionPlan = '';
+    int minDays = 0;
+    int maxDays = 0;
     
     switch (actionType) {
       case 'gradual':
         message = 'Bạn đã chọn phương pháp "Từ từ"';
-        actionPlan = 'Mỗi tuần giảm 20% tần suất thực hiện thói quen này. Bạn sẽ hoàn toàn bỏ được sau 5 tuần.';
+        actionPlan = 'Giảm dần từ 3-6 tháng. Thông báo nhắc nhở 1 lần/ngày lúc 6h sáng.';
+        minDays = 90; // 3 months
+        maxDays = 180; // 6 months
         break;
       case 'moderate':
         message = 'Bạn đã chọn phương pháp "Vừa phải"';
-        actionPlan = 'Giảm 50% tần suất ngay từ tuần đầu, sau đó giảm dần hoàn toàn trong 3 tuần.';
+        actionPlan = 'Giảm dần từ 1.5-3 tháng. Thông báo nhắc nhở 2 lần/ngày (6h sáng, 6h chiều).';
+        minDays = 45; // 1.5 months
+        maxDays = 90; // 3 months
         break;
       case 'strict':
         message = 'Bạn đã chọn phương pháp "Kiên quyết"';
-        actionPlan = 'Dừng hoàn toàn ngay từ hôm nay. Hãy tìm hoạt động thay thế khi có cảm giác muốn quay lại.';
+        actionPlan = 'Dừng hoàn toàn từ 15 ngày - 1 tháng. Thông báo nhắc nhở mỗi 3 tiếng (6h-0h).';
+        minDays = 15; // 15 days
+        maxDays = 30; // 1 month
         break;
     }
+    
+    // Show duration picker
+    final selectedDays = await _showDurationPicker(context, actionType, minDays, maxDays);
+    if (selectedDays == null || !mounted) return; // User cancelled
 
-    showDialog(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Row(
@@ -232,7 +249,32 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
             ),
             const SizedBox(height: 8),
             Text(actionPlan),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.shade200),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_month, color: Colors.amber, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Thời gian: $selectedDays ngày',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -241,14 +283,38 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.lightbulb, color: Colors.orange, size: 20),
+                  const Icon(Icons.access_time, color: Colors.blue, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Hãy theo dõi tiến độ hàng ngày để đạt kết quả tốt nhất!',
+                      'Điểm danh mỗi ngày vào 22h. Nếu bỏ lỡ sẽ tự động đánh dấu thất bại.',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey[800],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.emoji_events, color: Colors.green, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Hoàn thành ≥90%: Thành công! 🎉',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.green[800],
                       ),
                     ),
                   ),
@@ -259,19 +325,262 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Lưu kế hoạch và bắt đầu theo dõi
-            },
-            child: const Text('Bắt đầu ngay'),
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+            ),
+            child: const Text('Bắt đầu ngay', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
+
+    if (confirmed == true && mounted) {
+      _createChallenge(habit, actionType, selectedDays);
+    }
+  }
+
+  Future<int?> _showDurationPicker(BuildContext context, String actionType, int minDays, int maxDays) async {
+    int selectedDays = minDays;
+    
+    return showDialog<int>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Chọn thời gian cam kết'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Bạn muốn cam kết trong bao lâu?',
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        '$selectedDays ngày',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      Text(
+                        '(~${(selectedDays / 30).toStringAsFixed(1)} tháng)',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Slider(
+                  value: selectedDays.toDouble(),
+                  min: minDays.toDouble(),
+                  max: maxDays.toDouble(),
+                  divisions: maxDays - minDays,
+                  label: '$selectedDays ngày',
+                  onChanged: (value) {
+                    setState(() {
+                      selectedDays = value.toInt();
+                    });
+                  },
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '$minDays ngày',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                    Text(
+                      '$maxDays ngày',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, null),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, selectedDays),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
+                child: const Text('Tiếp tục', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _createChallenge(Habit habit, String actionType, int durationDays) async {
+    final now = DateTime.now();
+    final endDate = now.add(Duration(days: durationDays));
+
+    final challenge = BadHabitChallenge(
+      id: '${habit.id}_${DateTime.now().millisecondsSinceEpoch}',
+      habitId: habit.id,
+      habitName: habit.name,
+      habitIcon: habit.icon,
+      level: actionType,
+      startDate: now,
+      targetEndDate: endDate,
+    );
+
+    setState(() {
+      _activeChallenges[habit.id] = challenge;
+    });
+
+    // Schedule notifications
+    try {
+      await BadHabitNotificationService.scheduleNotifications(challenge);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Đã lên lịch nhắc nhở!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⚠️ Không thể lên lịch thông báo. Vui lòng kiểm tra quyền.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
+
+    // Navigate to progress screen
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BadHabitProgressScreen(
+            challenge: challenge,
+            onUpdate: (updatedChallenge) {
+              setState(() {
+                _activeChallenges[habit.id] = updatedChallenge;
+              });
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  List<Widget> _buildChallengeStatus(BadHabitChallenge challenge, bool isDarkMode) {
+    final levelColor = Color(
+      int.parse(challenge.getLevelColor().substring(1), radix: 16) + 0xFF000000,
+    );
+    final percentage = challenge.getCompletionPercentage();
+    final daysCompleted = challenge.getDaysCompleted();
+    final totalDays = challenge.getTotalDays();
+
+    return [
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: levelColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: levelColor.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      challenge.getLevelIcon(),
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Đang thực hiện: ${challenge.getLevelName()}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: levelColor,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: levelColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '$daysCompleted/$totalDays',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: LinearProgressIndicator(
+                value: percentage,
+                backgroundColor: Colors.grey[300],
+                valueColor: AlwaysStoppedAnimation<Color>(levelColor),
+                minHeight: 8,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '🔥 Chuỗi: ${challenge.getCurrentStreak()} ngày',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                ),
+                Text(
+                  '${(percentage * 100).toStringAsFixed(0)}% hoàn thành',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: levelColor,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: AppDimensions.paddingMedium),
+    ];
   }
 
   @override
@@ -415,25 +724,60 @@ class _BadHabitsScreenState extends State<BadHabitsScreen> {
                               ),
                               const SizedBox(height: AppDimensions.paddingMedium),
                               
+                              // Show active challenge status if exists
+                              if (_activeChallenges.containsKey(habit.id))
+                                ..._buildChallengeStatus(_activeChallenges[habit.id]!, isDarkMode),
+                              
                               // Action Button
                               SizedBox(
                                 width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () => _showActionOptions(context, habit),
-                                  icon: const Icon(Icons.rocket_launch),
-                                  label: const Text('Hành động ngay'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                      horizontal: 20,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
+                                child: _activeChallenges.containsKey(habit.id)
+                                    ? ElevatedButton.icon(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => BadHabitProgressScreen(
+                                                challenge: _activeChallenges[habit.id]!,
+                                                onUpdate: (updatedChallenge) {
+                                                  setState(() {
+                                                    _activeChallenges[habit.id] = updatedChallenge;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.trending_up),
+                                        label: const Text('Xem tiến độ'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.primary,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 14,
+                                            horizontal: 20,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                      )
+                                    : ElevatedButton.icon(
+                                        onPressed: () => _showActionOptions(context, habit),
+                                        icon: const Icon(Icons.rocket_launch),
+                                        label: const Text('Hành động ngay'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 14,
+                                            horizontal: 20,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                      ),
                               ),
                             ],
                           ),
