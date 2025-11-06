@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import '../models/bad_habit_challenge.dart';
+import '../models/habit.dart';
 
 class BadHabitNotificationService {
   static final FlutterLocalNotificationsPlugin _notifications =
@@ -13,63 +15,155 @@ class BadHabitNotificationService {
   static Future<void> initialize() async {
     if (_initialized) return;
 
-    tz.initializeTimeZones();
-    
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-    
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+    try {
+      tz.initializeTimeZones();
+      
+      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
+      
+      const initSettings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      );
 
-    await _notifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // Handle notification tap
-      },
-    );
+      await _notifications.initialize(
+        initSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse response) {
+          // Handle notification tap
+          debugPrint('Notification tapped: ${response.payload}');
+        },
+      );
 
-    _initialized = true;
+      _initialized = true;
+    } catch (e) {
+      debugPrint('Error initializing notification service: $e');
+    }
   }
 
   // Request permission (for iOS)
   static Future<bool> requestPermission() async {
-    final result = await _notifications
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-    return result ?? true;
+    try {
+      final result = await _notifications
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+      return result ?? true;
+    } catch (e) {
+      debugPrint('Error requesting notification permission: $e');
+      return false;
+    }
   }
 
   // Schedule notifications for a challenge
   static Future<void> scheduleNotifications(BadHabitChallenge challenge) async {
     await initialize();
     
-    // Cancel existing notifications for this challenge
-    await cancelNotifications(challenge.id);
+    try {
+      // Cancel existing notifications for this challenge
+      await cancelNotifications(challenge.id);
 
-    // Schedule reminder notifications
-    final hours = challenge.getNotificationHours();
-    for (int i = 0; i < hours.length; i++) {
-      final hour = hours[i];
-      await _scheduleNotificationAtHour(
-        challenge,
-        i,
-        hour,
-      );
+      // Schedule reminder notifications
+      final hours = challenge.getNotificationHours();
+      for (int i = 0; i < hours.length; i++) {
+        final hour = hours[i];
+        await _scheduleNotificationAtHour(
+          challenge,
+          i,
+          hour,
+        );
+      }
+      
+      // Schedule 22:00 check-in reminder (most important)
+      await _scheduleCheckInReminder(challenge);
+    } catch (e) {
+      debugPrint('Error scheduling challenge notifications: $e');
     }
+  }
+  
+  // Schedule reminder for a habit
+  static Future<void> scheduleHabitReminder(Habit habit) async {
+    if (habit.reminderTime == null) return;
     
-    // Schedule 22:00 check-in reminder (most important)
-    await _scheduleCheckInReminder(challenge);
+    await initialize();
+    
+    try {
+      // Cancel existing reminder for this habit
+      await cancelHabitReminder(habit.id);
+      
+      // Parse reminder time (format: "HH:mm")
+      final timeParts = habit.reminderTime!.split(':');
+      final hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+      
+      final now = DateTime.now();
+      var scheduledDate = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        hour,
+        minute,
+      );
+      
+      // If time has passed today, schedule for tomorrow
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+      
+      const androidDetails = AndroidNotificationDetails(
+        'habit_reminders',
+        'Nhắc nhở thói quen',
+        channelDescription: 'Thông báo nhắc nhở thực hiện thói quen',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      );
+      
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+      
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+      
+      final notificationId = habit.id.hashCode;
+      
+      await _notifications.zonedSchedule(
+        notificationId,
+        '${habit.icon} Nhắc nhở: ${habit.name}',
+        'Đã đến lúc thực hiện thói quen của bạn!',
+        tz.TZDateTime.from(scheduledDate, tz.local),
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time, // Repeat daily
+      );
+      
+      debugPrint('Scheduled habit reminder: ${habit.name} at ${habit.reminderTime}');
+    } catch (e) {
+      debugPrint('Error scheduling habit reminder: $e');
+    }
+  }
+  
+  // Cancel habit reminder
+  static Future<void> cancelHabitReminder(String habitId) async {
+    try {
+      await _notifications.cancel(habitId.hashCode);
+    } catch (e) {
+      debugPrint('Error cancelling habit reminder: $e');
+    }
   }
 
   static Future<void> _scheduleCheckInReminder(BadHabitChallenge challenge) async {

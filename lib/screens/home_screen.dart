@@ -4,6 +4,8 @@ import '../models/habit.dart';
 import '../widgets/habit_card.dart';
 import '../widgets/progress_circle.dart';
 import '../constants/app_constants.dart';
+import '../utils/habit_storage_service.dart';
+import '../utils/user_storage_service.dart';
 import 'add_habit_screen.dart';
 import 'habit_detail_screen.dart';
 import 'profile_screen.dart';
@@ -20,80 +22,127 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Habit> habits = [];
+  bool _isLoading = true;
   
   @override
   void initState() {
     super.initState();
-    // Initialize with provided habits or default habits
-    if (widget.initialHabits != null && widget.initialHabits!.isNotEmpty) {
-      habits = widget.initialHabits!;
-    } else {
-      // Load default demo habits
-      habits = [
-        Habit(
-          id: '1',
-          name: 'Morning Meditation',
-          icon: '🧘',
-          category: 'Mind',
-          color: '#6FCF97',
-          targetMinutes: 15,
-          habitType: 'good',
-          completedDates: {
-            '2025-10-28': true,
-            '2025-10-29': true,
-            '2025-10-30': true,
-          },
-        ),
-        Habit(
-          id: '2',
-          name: 'Read Books',
-          icon: '📚',
-          category: 'Study',
-          color: '#2F80ED',
-          targetMinutes: 30,
-          habitType: 'good',
-          completedDates: {
-            '2025-10-28': true,
-            '2025-10-29': false,
-            '2025-10-30': true,
-          },
-        ),
-        Habit(
-          id: '3',
-          name: 'Drink Water',
-          icon: '💧',
-          category: 'Health',
-          color: '#56CCF2',
-          targetMinutes: 5,
-          habitType: 'good',
-          completedDates: {
-            '2025-10-30': true,
-          },
-        ),
-        Habit(
-          id: '4',
-          name: 'Smoking',
-          icon: '🚬',
-          category: 'Health',
-          color: '#EB5757',
-          targetMinutes: 0,
-          habitType: 'bad',
-          completedDates: {},
-          description: 'Hút thuốc gây hại nghiêm trọng cho sức khỏe, ảnh hưởng đến phổi, tim mạch và tăng nguy cơ ung thư.',
-        ),
-        Habit(
-          id: '5',
-          name: 'Late Night Social Media',
-          icon: '📱',
-          category: 'Health',
-          color: '#EB5757',
-          targetMinutes: 0,
-          habitType: 'bad',
-          completedDates: {},
-          description: 'Sử dụng điện thoại vào ban đêm làm giảm chất lượng giấc ngủ, ảnh hưởng đến sức khỏe tinh thần và thể chất.',
-        ),
-      ];
+    _loadHabits();
+  }
+  
+  Future<void> _loadHabits() async {
+    try {
+      // Try to load habits from storage first
+      final savedHabits = await HabitStorageService.loadHabits();
+      
+      if (savedHabits.isNotEmpty) {
+        // User has saved habits - use them
+        setState(() {
+          habits = savedHabits;
+          _isLoading = false;
+        });
+      } else if (widget.initialHabits != null && widget.initialHabits!.isNotEmpty) {
+        // Use provided initial habits
+        setState(() {
+          habits = widget.initialHabits!;
+          _isLoading = false;
+        });
+        // Save them to storage
+        await HabitStorageService.saveHabits(habits);
+      } else {
+        // Check if this is first-time user
+        final isFirstTime = await UserStorageService.isFirstTimeUser();
+        
+        if (isFirstTime) {
+          // First-time user - show demo habits
+          setState(() {
+            habits = _getDemoHabits();
+            _isLoading = false;
+          });
+          // Save demo habits
+          await HabitStorageService.saveHabits(habits);
+        } else {
+          // Returning user with no habits - start with empty list
+          setState(() {
+            habits = [];
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading habits: $e');
+      setState(() {
+        habits = [];
+        _isLoading = false;
+      });
     }
+  }
+  
+  List<Habit> _getDemoHabits() {
+    return [
+      Habit(
+        id: '1',
+        name: 'Morning Meditation',
+        icon: '🧘',
+        category: 'Mind',
+        color: '#6FCF97',
+        targetMinutes: 15,
+        habitType: 'good',
+        completedDates: {
+          '2025-10-28': true,
+          '2025-10-29': true,
+          '2025-10-30': true,
+        },
+      ),
+      Habit(
+        id: '2',
+        name: 'Read Books',
+        icon: '📚',
+        category: 'Study',
+        color: '#2F80ED',
+        targetMinutes: 30,
+        habitType: 'good',
+        completedDates: {
+          '2025-10-28': true,
+          '2025-10-29': false,
+          '2025-10-30': true,
+        },
+      ),
+      Habit(
+        id: '3',
+        name: 'Drink Water',
+        icon: '💧',
+        category: 'Health',
+        color: '#56CCF2',
+        targetMinutes: 5,
+        habitType: 'good',
+        completedDates: {
+          '2025-10-30': true,
+        },
+      ),
+      Habit(
+        id: '4',
+        name: 'Smoking',
+        icon: '🚬',
+        category: 'Health',
+        color: '#EB5757',
+        targetMinutes: 0,
+        habitType: 'bad',
+        completedDates: {},
+        description: 'Hút thuốc gây hại nghiêm trọng cho sức khỏe, ảnh hưởng đến phổi, tim mạch và tăng nguy cơ ung thư.',
+      ),
+      Habit(
+        id: '5',
+        name: 'Late Night Social Media',
+        icon: '📱',
+        category: 'Health',
+        color: '#EB5757',
+        targetMinutes: 0,
+        habitType: 'bad',
+        completedDates: {},
+        description: 'Sử dụng điện thoại vào ban đêm làm giảm chất lượng giấc ngủ, ảnh hưởng đến sức khỏe tinh thần và thể chất.',
+      ),
+    ];
   }
 
   String _getGreeting(BuildContext context) {
@@ -121,13 +170,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return _getCompletedToday() / goodHabits.length;
   }
 
-  void _toggleHabit(Habit habit) {
+  void _toggleHabit(Habit habit) async {
     setState(() {
       final index = habits.indexWhere((h) => h.id == habit.id);
       if (index != -1) {
         habits[index] = habit.toggleCompletion(DateTime.now());
       }
     });
+    // Save to storage
+    await HabitStorageService.saveHabits(habits);
   }
 
   void _navigateToAddHabit() async {
@@ -142,6 +193,8 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         habits.add(newHabit);
       });
+      // Save to storage
+      await HabitStorageService.saveHabits(habits);
     }
   }
 
@@ -158,6 +211,8 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         habits.removeWhere((h) => h.id == habit.id);
       });
+      // Save to storage
+      await HabitStorageService.saveHabits(habits);
     } else if (result is Habit) {
       // Update the habit
       setState(() {
@@ -166,6 +221,8 @@ class _HomeScreenState extends State<HomeScreen> {
           habits[index] = result;
         }
       });
+      // Save to storage
+      await HabitStorageService.saveHabits(habits);
     }
   }
 
@@ -188,6 +245,9 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         }
       });
+      
+      // Save to storage
+      await HabitStorageService.saveHabits(habits);
       
       // Show success snackbar
       if (mounted) {

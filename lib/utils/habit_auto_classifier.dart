@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -42,9 +43,14 @@ class HabitAutoClassifier {
       // Fallback: Use simple keyword search
       return await _classifyByKeywords(habitName);
       
+    } on http.ClientException catch (e) {
+      // Network error - no internet connection
+      debugPrint('Network error in online classification: $e');
+      return await _classifyByKeywords(habitName);
     } catch (e) {
-      // If online search fails, return uncertain
-      return 'uncertain';
+      // Any other error - fallback to keyword classification
+      debugPrint('Error in online classification: $e');
+      return await _classifyByKeywords(habitName);
     }
   }
   
