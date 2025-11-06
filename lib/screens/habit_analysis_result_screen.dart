@@ -73,7 +73,7 @@ class _HabitAnalysisResultScreenState extends State<HabitAnalysisResultScreen> {
             targetMinutes: finalType == 'good' ? 30 : 0,
             completedDates: {},
             createdAt: DateTime.now(),
-            habitType: finalType == 'bad' ? 'bad' : 'good',
+            habitType: finalType, // Keep original type: 'good', 'bad', or 'uncertain'
           ),
         );
         index++;
@@ -105,7 +105,7 @@ class _HabitAnalysisResultScreenState extends State<HabitAnalysisResultScreen> {
           targetMinutes: finalType == 'good' ? 30 : 0,
           completedDates: {},
           createdAt: DateTime.now(),
-          habitType: finalType == 'bad' ? 'bad' : 'good',
+          habitType: finalType, // Keep original type: 'good', 'bad', or 'uncertain'
         ),
       );
     }
@@ -401,28 +401,30 @@ class _HabitAnalysisResultScreenState extends State<HabitAnalysisResultScreen> {
                 padding: const EdgeInsets.all(AppDimensions.paddingLarge),
                 child: Column(
                   children: [
-                    if (_badHabitsCount > 0)
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () => _continueToSuggestions(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-                            ),
+                    // Always show suggestions button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: () => _continueToSuggestions(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                           ),
-                          child: const Text(
-                            'Xem gợi ý thói quen tốt',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        ),
+                        child: Text(
+                          _badHabitsCount > 0 
+                              ? 'Xem gợi ý thói quen tốt' 
+                              : 'Khám phá thêm thói quen tốt',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                    ),
                     
                     const SizedBox(height: AppDimensions.paddingSmall),
                     
@@ -437,9 +439,9 @@ class _HabitAnalysisResultScreenState extends State<HabitAnalysisResultScreen> {
                             borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                           ),
                         ),
-                        child: Text(
-                          _badHabitsCount > 0 ? 'Bỏ qua, bắt đầu ngay' : 'Bắt đầu hành trình',
-                          style: const TextStyle(
+                        child: const Text(
+                          'Bắt đầu hành trình',
+                          style: TextStyle(
                             color: AppColors.primary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,

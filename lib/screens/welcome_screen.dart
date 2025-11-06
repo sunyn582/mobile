@@ -6,6 +6,7 @@ import '../models/user_profile.dart';
 import '../models/habit.dart';
 import '../utils/user_provider.dart';
 import '../utils/user_storage_service.dart';
+import '../utils/habit_storage_service.dart';
 import 'home_screen.dart';
 import 'onboarding_profile_screen.dart';
 import 'current_habits_input_screen.dart';
@@ -166,6 +167,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   }
   
   Future<void> _saveProfileAndContinue(UserProfile profile, List<Habit> habits) async {
+    // Check if this is a new user (different from current user)
+    final currentUser = await UserStorageService.getCurrentUser();
+    
+    if (currentUser != null && currentUser.name != profile.name) {
+      // This is a NEW user, clear old habits from previous user
+      await HabitStorageService.clearAllHabits();
+    }
+    
     // Save profile
     await UserStorageService.markAsReturningUser();
     await UserStorageService.saveCurrentUser(profile);

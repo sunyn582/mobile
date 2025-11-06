@@ -10,6 +10,7 @@ import 'add_habit_screen.dart';
 import 'habit_detail_screen.dart';
 import 'profile_screen.dart';
 import 'bad_habits_screen.dart';
+import 'uncertain_habits_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final List<Habit>? initialHabits;
@@ -268,6 +269,124 @@ class _HomeScreenState extends State<HomeScreen> {
     return habits.where((h) => h.habitType == type).toList();
   }
 
+  // Build uncertain habits notification banner
+  Widget _buildUncertainHabitsNotification() {
+    final uncertainHabits = _getHabitsByType('uncertain');
+    if (uncertainHabits.isEmpty) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: () async {
+        final updatedHabits = await Navigator.push<List<Habit>>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UncertainHabitsScreen(uncertainHabits: uncertainHabits),
+          ),
+        );
+
+        if (updatedHabits != null) {
+          // Update habits with reclassified ones
+          setState(() {
+            for (var updatedHabit in updatedHabits) {
+              final index = habits.indexWhere((h) => h.id == updatedHabit.id);
+              if (index != -1) {
+                habits[index] = updatedHabit;
+              }
+            }
+          });
+          // Save to storage
+          await HabitStorageService.saveHabits(habits);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingMedium,
+          vertical: AppDimensions.paddingSmall,
+        ),
+        padding: const EdgeInsets.all(AppDimensions.paddingMedium),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF2C94C).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          border: Border.all(color: const Color(0xFFF2C94C).withValues(alpha: 0.3), width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.help_outline, color: Color(0xFFF2C94C), size: 20),
+                const SizedBox(width: 8),
+              Text(
+                'Thói quen chưa phân loại',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFD4A017),
+                  fontSize: 14,
+                ),
+              ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF2C94C),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${uncertainHabits.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_ios, color: Color(0xFFF2C94C), size: 16),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Bạn có ${uncertainHabits.length} thói quen chưa được phân loại. Nhấn để phân loại ngay!',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFFD4A017),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: uncertainHabits.map((habit) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFF2C94C).withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(habit.icon, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(width: 6),
+                      Text(
+                        habit.name,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFD4A017),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Build bad habits notification banner
   Widget _buildBadHabitsNotification() {
     final badHabits = _getHabitsByType('bad');
@@ -412,6 +531,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
+
+              // Uncertain Habits Notification (if any)
+              _buildUncertainHabitsNotification(),
 
               // Bad Habits Notification (if any)
               _buildBadHabitsNotification(),
