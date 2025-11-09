@@ -222,19 +222,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studentName => 'Student Name';
 
   @override
-  String get studentNamePlaceholder => 'Nguyễn Văn A';
+  String get studentNamePlaceholder => 'Vũ Văn Sơn';
 
   @override
   String get studentId => 'Student ID';
 
   @override
-  String get studentIdPlaceholder => '2024XXXX';
+  String get studentIdPlaceholder => '23010060';
 
   @override
   String get instructor => 'Instructor';
 
   @override
-  String get instructorPlaceholder => 'Giảng viên hướng dẫn';
+  String get instructorPlaceholder => 'Nguyễn Xuân Quế';
 
   @override
   String get version => 'Version';

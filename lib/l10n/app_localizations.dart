@@ -509,7 +509,7 @@ abstract class AppLocalizations {
   /// Student name placeholder
   ///
   /// In en, this message translates to:
-  /// **'Nguyễn Văn A'**
+  /// **'Vũ Văn Sơn'**
   String get studentNamePlaceholder;
 
   /// Student ID label
@@ -521,7 +521,7 @@ abstract class AppLocalizations {
   /// Student ID placeholder
   ///
   /// In en, this message translates to:
-  /// **'2024XXXX'**
+  /// **'23010060'**
   String get studentIdPlaceholder;
 
   /// Instructor label
@@ -533,7 +533,7 @@ abstract class AppLocalizations {
   /// Instructor placeholder
   ///
   /// In en, this message translates to:
-  /// **'Giảng viên hướng dẫn'**
+  /// **'Nguyễn Xuân Quế'**
   String get instructorPlaceholder;
 
   /// Version label

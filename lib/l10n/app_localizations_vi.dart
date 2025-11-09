@@ -221,19 +221,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String get studentName => 'Tên sinh viên';
 
   @override
-  String get studentNamePlaceholder => 'Nguyễn Văn A';
+  String get studentNamePlaceholder => 'Vũ Văn Sơn';
 
   @override
   String get studentId => 'Mã sinh viên';
 
   @override
-  String get studentIdPlaceholder => '2024XXXX';
+  String get studentIdPlaceholder => '23010060';
 
   @override
   String get instructor => 'Giảng viên';
 
   @override
-  String get instructorPlaceholder => 'Giảng viên hướng dẫn';
+  String get instructorPlaceholder => 'Nguyễn Xuân Quế';
 
   @override
   String get version => 'Phiên bản';

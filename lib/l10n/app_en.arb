@@ -334,7 +334,7 @@
     "description": "Student name label"
   },
   
-  "studentNamePlaceholder": "Nguyễn Văn A",
+  "studentNamePlaceholder": "Vũ Văn Sơn",
   "@studentNamePlaceholder": {
     "description": "Student name placeholder"
   },
@@ -344,7 +344,7 @@
     "description": "Student ID label"
   },
   
-  "studentIdPlaceholder": "2024XXXX",
+  "studentIdPlaceholder": "23010060",
   "@studentIdPlaceholder": {
     "description": "Student ID placeholder"
   },
@@ -354,7 +354,7 @@
     "description": "Instructor label"
   },
   
-  "instructorPlaceholder": "Giảng viên hướng dẫn",
+  "instructorPlaceholder": "Nguyễn Xuân Quế",
   "@instructorPlaceholder": {
     "description": "Instructor placeholder"
   },
